@@ -3,12 +3,11 @@ import { requestIdleCallback, onDocumentReady } from '@theme/utilities';
 
 /**
  * Hydrates a section using the Section Rendering API preserving states.
- * Only updates elements with data-hydration-key attribute. This ensures that non-targeted nodes do not have their markup/state updated unnecessarily.
+ * Only updates elements with data-lazy-hydration attribute.
  *
  * @param {string} sectionId - The section ID to hydrate
- * @param {URL} [url] - The URL to render the section from
  */
-async function hydrateSection(sectionId, url) {
+async function hydrateSection(sectionId) {
   const normalizedId = normalizeSectionId(sectionId);
   const section = document.getElementById(buildSectionSelector(normalizedId));
 
@@ -16,7 +15,7 @@ async function hydrateSection(sectionId, url) {
     return;
   }
 
-  await sectionRenderer.renderSection(normalizedId, { cache: false, url, mode: 'hydration' });
+  await sectionRenderer.renderSection(normalizedId, { cache: false });
 
   section.dataset.hydrated = 'true';
 }
@@ -26,10 +25,9 @@ async function hydrateSection(sectionId, url) {
  * the DOM is ready.
  *
  * @param {string} sectionId - The section ID to hydrate
- * @param {URL} [url] - The URL to render the section from
  */
-export async function hydrate(sectionId, url) {
+export async function hydrate(sectionId) {
   onDocumentReady(() => {
-    requestIdleCallback(() => hydrateSection(sectionId, url));
+    requestIdleCallback(() => hydrateSection(sectionId));
   });
 }

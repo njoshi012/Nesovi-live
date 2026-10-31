@@ -4,12 +4,17 @@
   {% content_for 'blocks' %}
 {% endcapture %}
 
-{% render 'section',
-  section: section,
-  children: children,
-  section_id: section.id,
-  background_color: section.settings.background_color
-%}
+{% render 'section', section: section, children: children %}
+
+{% stylesheet %}
+  /* NESOVI: unify FAQ / content-section heading with other section headings (24px) */
+  .text-block--text_rnRqqk > * {
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    text-transform: capitalize;
+    line-height: 1.2;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -234,6 +239,12 @@
       "content": "t:content.appearance"
     },
     {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
       "type": "select",
       "id": "background_media",
       "label": "t:settings.background_media",
@@ -252,13 +263,6 @@
         }
       ],
       "default": "none"
-    },
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "t:settings.background_color",
-      "placeholder": "t:settings.default",
-      "visible_if": "{{ section.settings.background_media == 'none' }}"
     },
     {
       "type": "video",
@@ -305,6 +309,54 @@
       ],
       "default": "cover",
       "visible_if": "{{ section.settings.background_media == 'image' }}"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.borders",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "label": "t:settings.border_width",
+      "default": 1,
+      "visible_if": "{{ section.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.border_opacity",
+      "default": 100,
+      "visible_if": "{{ section.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "checkbox",
@@ -355,65 +407,6 @@
     },
     {
       "type": "header",
-      "content": "t:content.borders"
-    },
-    {
-      "type": "select",
-      "id": "border",
-      "label": "t:settings.style",
-      "options": [
-        {
-          "value": "none",
-          "label": "t:options.none"
-        },
-        {
-          "value": "solid",
-          "label": "t:options.solid"
-        }
-      ],
-      "default": "none"
-    },
-    {
-      "type": "range",
-      "id": "border_width",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "label": "t:settings.thickness",
-      "default": 1,
-      "visible_if": "{{ section.settings.border != 'none' }}"
-    },
-    {
-      "type": "range",
-      "id": "border_opacity",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "label": "t:settings.opacity",
-      "default": 100,
-      "visible_if": "{{ section.settings.border != 'none' }}"
-    },
-    {
-      "type": "color",
-      "id": "border_color",
-      "label": "t:settings.color",
-      "placeholder": "t:settings.default",
-      "visible_if": "{{ section.settings.border != 'none' }}"
-    },
-    {
-      "type": "range",
-      "id": "border_radius",
-      "label": "t:settings.border_radius",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "px",
-      "default": 0
-    },
-    {
-      "type": "header",
       "content": "t:content.padding"
     },
     {
@@ -447,13 +440,13 @@
     },
     {
       "name": "t:names.rich_text_section",
-      "category": "t:categories.text",
+      "category": "t:categories.storytelling",
       "blocks": {
         "heading": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "t:html_defaults.new_arrivals_h2",
+            "text": "<h2>New arrivals</h2>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -464,6 +457,7 @@
             "letter_spacing": "normal",
             "case": "none",
             "wrap": "pretty",
+            "background": false,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -474,7 +468,7 @@
           "type": "text",
           "name": "t:names.text",
           "settings": {
-            "text": "t:html_defaults.make_things_better_extended",
+            "text": "<p>We make things that work better and last longer. Our products solve real problems with clean design and honest materials.</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -485,6 +479,7 @@
             "letter_spacing": "normal",
             "case": "none",
             "wrap": "pretty",
+            "background": false,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -495,7 +490,7 @@
           "type": "button",
           "name": "t:names.button",
           "settings": {
-            "label": "t:text_defaults.button_label",
+            "label": "Shop now",
             "link": "shopify://collections/all",
             "open_in_new_tab": false,
             "style_class": "button",
@@ -517,6 +512,7 @@
         "gap": 25,
         "section_width": "page-width",
         "section_height": "small",
+        "color_scheme": "",
         "background_media": "none",
         "video_position": "cover",
         "background_image_position": "cover",
@@ -530,14 +526,14 @@
     },
     {
       "name": "t:names.faq_section",
-      "category": "t:categories.text",
+      "category": "t:categories.storytelling",
       "blocks": {
         "text": {
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "t:html_defaults.faq",
-            "type_preset": "h3",
+            "text": "<h3>Frequently asked questions</h3>",
+            "type_preset": "rte",
             "font": "var(--font-body--family)",
             "font_size": "",
             "line_height": "normal",
@@ -560,6 +556,8 @@
             "icon": "caret",
             "dividers": true,
             "type_preset": "h5",
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "border": "none",
             "border_width": 1,
             "border_opacity": 100,
@@ -573,13 +571,13 @@
             "accordion_row_1": {
               "type": "_accordion-row",
               "settings": {
-                "heading": "t:text_defaults.what_is_return_policy"
+                "heading": "What is the return policy?"
               },
               "blocks": {
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.goal_for_every_customer",
+                    "text": "<p>Our goal is for every customer to be totally satisfied with their purchase. If this isn’t the case, let us know and we’ll do our best to work with you to make it right. </p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -602,13 +600,13 @@
             "accordion_row_2": {
               "type": "_accordion-row",
               "settings": {
-                "heading": "t:text_defaults.are_purchases_final_sale"
+                "heading": "Are any purchases final sale?"
               },
               "blocks": {
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.unable_to_accept_returns",
+                    "text": "<p>We are unable to accept returns on certain items. These will be carefully marked before purchase.</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -632,14 +630,14 @@
               "type": "_accordion-row",
               "name": "t:names.accordion_row",
               "settings": {
-                "heading": "t:text_defaults.when_will_order_arrive"
+                "heading": "When will I get my order?"
               },
               "blocks": {
                 "text": {
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "t:html_defaults.work_quickly_to_ship",
+                    "text": "<p>We will work quickly to ship your order as soon as possible. Once your order has shipped, you will receive an email with further information. Delivery times vary depending on your location.</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -663,14 +661,14 @@
               "type": "_accordion-row",
               "name": "t:names.accordion_row",
               "settings": {
-                "heading": "t:text_defaults.where_are_products_made"
+                "heading": "Where are your products manufactured?"
               },
               "blocks": {
                 "text": {
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "t:html_defaults.made_local_and_global",
+                    "text": "<p>Our products are manufactured both locally and globally. We carefully select our manufacturing partners to ensure our products are high quality and a fair value. </p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -694,14 +692,14 @@
               "type": "_accordion-row",
               "name": "t:names.accordion_row",
               "settings": {
-                "heading": "t:text_defaults.how_much_for_shipping"
+                "heading": "How much does shipping cost?"
               },
               "blocks": {
                 "text": {
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "t:html_defaults.shipping_based_on_location",
+                    "text": "<p>Shipping is calculated based on your location and the items in your order. You will always know the shipping price before you purchase.</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -736,6 +734,7 @@
         "gap": 32,
         "section_width": "page-width",
         "section_height": "",
+        "color_scheme": "",
         "background_media": "none",
         "video_position": "cover",
         "background_image_position": "cover",
@@ -760,6 +759,7 @@
         "gap": 16,
         "section_width": "page-width",
         "section_height": "",
+        "color_scheme": "",
         "background_media": "none",
         "video_position": "cover",
         "background_image_position": "cover",
@@ -787,7 +787,7 @@
         },
         "group": {
           "type": "group",
-          "name": "t:names.caption",
+          "name": "Caption",
           "settings": {
             "content_direction": "row",
             "vertical_on_mobile": true,
@@ -803,6 +803,8 @@
             "custom_width_mobile": 100,
             "height": "fit",
             "custom_height": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "background_media": "none",
             "video_position": "cover",
             "background_image_position": "cover",
@@ -820,7 +822,7 @@
               "type": "text",
               "name": "t:names.text",
               "settings": {
-                "text": "t:html_defaults.product_launch",
+                "text": "<p>Take a look behind the scenes of our latest product launch.</p>",
                 "type_preset": "rte",
                 "font": "var(--font-body--family)",
                 "font_size": "",
@@ -841,10 +843,10 @@
               "type": "button",
               "name": "t:names.button",
               "settings": {
-                "label": "t:text_defaults.discover_collection",
+                "label": "Discover the collection",
                 "link": "shopify://collections/all",
                 "open_in_new_tab": false,
-                "style_class": "button-unstyled",
+                "style_class": "link",
                 "width": "fit-content",
                 "custom_width": 100,
                 "width_mobile": "fit-content",
@@ -859,12 +861,12 @@
     },
     {
       "name": "t:names.pull_quote",
-      "category": "t:categories.text",
+      "category": "t:categories.storytelling",
       "blocks": {
         "text": {
           "type": "text",
           "settings": {
-            "text": "t:html_defaults.product_story",
+            "text": "<p>At the heart of every product lies a unique story, driven by our passion for quality and innovation. Each item enhances your everyday life and sparks joy.</p>",
             "type_preset": "h2",
             "width": "100%",
             "max_width": "narrow",
@@ -874,9 +876,9 @@
         "button": {
           "type": "button",
           "settings": {
-            "label": "t:text_defaults.shop_now_button_label",
+            "label": "Shop now",
             "link": "shopify://collections/all",
-            "style_class": "button-unstyled"
+            "style_class": "link"
           }
         }
       },
@@ -895,7 +897,7 @@
         "text": {
           "type": "text",
           "settings": {
-            "text": "t:html_defaults.contact_us",
+            "text": "<h2>Contact us</h2>",
             "type_preset": "rte",
             "font": "var(--font-body--family)",
             "font_size": "",
@@ -917,6 +919,8 @@
             "custom_width": 50,
             "width_mobile": "custom",
             "custom_width_mobile": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -927,7 +931,7 @@
               "type": "contact-form-submit-button",
               "static": true,
               "settings": {
-                "label": "t:text_defaults.submit_button_label",
+                "label": "Submit",
                 "style_class": "button",
                 "width": "fit-content",
                 "custom_width": 100,
@@ -950,6 +954,7 @@
         "gap": 32,
         "section_width": "page-width",
         "section_height": "",
+        "color_scheme": "scheme-1",
         "background_media": "none",
         "video_position": "cover",
         "background_image_position": "cover",
@@ -967,6 +972,7 @@
       "settings": {
         "horizontal_alignment_flex_direction_column": "center",
         "gap": 16,
+        "color_scheme": "scheme-2",
         "padding-block-start": 40,
         "padding-block-end": 40
       },
@@ -975,7 +981,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "t:html_defaults.subscribe",
+            "text": "<h2>Subscribe to our emails</h2>",
             "width": "100%",
             "alignment": "center"
           }
@@ -983,7 +989,7 @@
         "text_2": {
           "type": "text",
           "settings": {
-            "text": "t:html_defaults.first_to_know",
+            "text": "<p>Be the first to know about new collections and special offers. </p>",
             "type_preset": "paragraph",
             "width": "100%",
             "alignment": "center"
@@ -996,7 +1002,7 @@
             "custom_width": 50,
             "style_class": "button-unstyled",
             "display_type": "arrow",
-            "label": "t:text_defaults.sign_up_button_label",
+            "label": "Sign Up",
             "integrated_button": true
           }
         }
@@ -1005,7 +1011,7 @@
     },
     {
       "name": "t:names.icons_with_text",
-      "category": "t:categories.text",
+      "category": "t:categories.storytelling",
       "blocks": {
         "group_1": {
           "type": "group",
@@ -1017,7 +1023,8 @@
             "horizontal_alignment_flex_direction_column": "center",
             "vertical_alignment_flex_direction_column": "center",
             "gap": 16,
-            "height": "fit"
+            "height": "fit",
+            "inherit_color_scheme": true
           },
           "blocks": {
             "icon": {
@@ -1037,7 +1044,7 @@
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.intentional_design",
+                    "text": "<h2>Intentional design</h2>",
                     "type_preset": "h3",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1055,7 +1062,7 @@
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.everythings_starts_with_why",
+                    "text": "<p>Everything we do starts with why</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1086,7 +1093,8 @@
             "horizontal_alignment_flex_direction_column": "center",
             "vertical_alignment_flex_direction_column": "center",
             "gap": 16,
-            "height": "fit"
+            "height": "fit",
+            "inherit_color_scheme": true
           },
           "blocks": {
             "icon": {
@@ -1106,7 +1114,7 @@
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.made_with_care_h2",
+                    "text": "<h2>Made with care</h2>",
                     "type_preset": "h3",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1124,7 +1132,7 @@
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.build_better",
+                    "text": "<p>We believe in building better</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1155,7 +1163,8 @@
             "horizontal_alignment_flex_direction_column": "center",
             "vertical_alignment_flex_direction_column": "center",
             "gap": 16,
-            "height": "fit"
+            "height": "fit",
+            "inherit_color_scheme": true
           },
           "blocks": {
             "icon": {
@@ -1175,7 +1184,7 @@
                 "heading": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.team_with_goal",
+                    "text": "<h2>A team with a goal</h2>",
                     "type_preset": "h3",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1193,7 +1202,7 @@
                 "text": {
                   "type": "text",
                   "settings": {
-                    "text": "t:html_defaults.real_people",
+                    "text": "<p>Real people making great products</p>",
                     "type_preset": "rte",
                     "font": "var(--font-body--family)",
                     "font_size": "",
@@ -1235,6 +1244,8 @@
             "horizontal_alignment_flex_direction_column": "center",
             "vertical_alignment_flex_direction_column": "space-between",
             "gap": 32,
+            "inherit_color_scheme": false,
+            "color_scheme": "scheme-5",
             "background_media": "image",
             "placeholder": "hero-apparel-2",
             "height": "fill",
@@ -1254,7 +1265,7 @@
             "text_1": {
               "type": "text",
               "settings": {
-                "text": "t:html_defaults.new_arrivals_h3",
+                "text": "<h3>New arrivals</h3>",
                 "type_preset": "h3",
                 "width": "fit-content",
                 "alignment": "center"
@@ -1263,9 +1274,9 @@
             "button": {
               "type": "button",
               "settings": {
-                "label": "t:text_defaults.shop_now_button_label",
+                "label": "Shop now",
                 "link": "shopify://collections/all",
-                "style_class": "button-unstyled"
+                "style_class": "link"
               }
             }
           },
@@ -1277,6 +1288,8 @@
             "horizontal_alignment_flex_direction_column": "center",
             "vertical_alignment_flex_direction_column": "space-between",
             "gap": 32,
+            "inherit_color_scheme": false,
+            "color_scheme": "scheme-5",
             "background_media": "image",
             "placeholder": "hero-apparel-1",
             "height": "fill",
@@ -1296,7 +1309,7 @@
             "text_1": {
               "type": "text",
               "settings": {
-                "text": "t:html_defaults.bestseller_h3",
+                "text": "<h3>Bestsellers</h3>",
                 "type_preset": "h3",
                 "width": "fit-content",
                 "alignment": "center"
@@ -1305,9 +1318,9 @@
             "button": {
               "type": "button",
               "settings": {
-                "label": "t:text_defaults.shop_now_button_label",
+                "label": "Shop now",
                 "link": "shopify://collections/all",
-                "style_class": "button-unstyled"
+                "style_class": "link"
               }
             }
           },
@@ -1351,21 +1364,21 @@
               "type": "text",
               "name": "t:names.heading",
               "settings": {
-                "text": "t:html_defaults.signature_products",
+                "text": "<h2>Our signature product.</h2>",
                 "type_preset": "h3"
               }
             },
             "text": {
               "type": "text",
               "settings": {
-                "text": "t:html_defaults.made_with_care_extended",
+                "text": "<p>Made with care and unconditionally loved by our customers, this signature bestseller exceeds all expectations.</p>",
                 "max_width": "narrow"
               }
             },
             "button": {
               "type": "button",
               "settings": {
-                "label": "t:text_defaults.shop_now_button_label",
+                "label": "Shop now",
                 "link": "shopify://collections/all"
               }
             }
@@ -1377,11 +1390,11 @@
     },
     {
       "name": "t:names.multicolumn",
-      "category": "t:categories.text",
+      "category": "t:categories.storytelling",
       "blocks": {
         "group_1": {
           "type": "group",
-          "name": "t:names.column",
+          "name": "Column",
           "settings": {
             "content_direction": "column",
             "vertical_on_mobile": true,
@@ -1396,6 +1409,8 @@
             "custom_width_mobile": 100,
             "height": "fit",
             "custom_height": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "background_media": "none",
             "video_position": "cover",
             "background_image_position": "cover",
@@ -1411,7 +1426,7 @@
           "blocks": {
             "heading": {
               "type": "text",
-              "name": "t:names.heading",
+              "name": "Heading",
               "settings": {
                 "text": "<h2>Intentional design</h2>",
                 "width": "100%",
@@ -1432,7 +1447,7 @@
             },
             "text": {
               "type": "text",
-              "name": "t:names.description",
+              "name": "Description",
               "settings": {
                 "text": "<p>We create with intention. Our products solve real problems with clean design and honest materials.</p>",
                 "width": "100%",
@@ -1456,7 +1471,7 @@
         },
         "group_2": {
           "type": "group",
-          "name": "t:names.column",
+          "name": "Column",
           "settings": {
             "content_direction": "column",
             "vertical_on_mobile": true,
@@ -1471,6 +1486,8 @@
             "custom_width_mobile": 100,
             "height": "fit",
             "custom_height": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "background_media": "none",
             "video_position": "cover",
             "background_image_position": "cover",
@@ -1486,7 +1503,7 @@
           "blocks": {
             "heading": {
               "type": "text",
-              "name": "t:names.heading",
+              "name": "Heading",
               "settings": {
                 "text": "<h2>Quality first</h2>",
                 "width": "100%",
@@ -1507,7 +1524,7 @@
             },
             "text": {
               "type": "text",
-              "name": "t:names.description",
+              "name": "Description",
               "settings": {
                 "text": "<p>We obsess over the details and strive to deliver the best products at the best prices, every time.</p>",
                 "width": "100%",
@@ -1531,7 +1548,7 @@
         },
         "group_3": {
           "type": "group",
-          "name": "t:names.column",
+          "name": "Column",
           "settings": {
             "content_direction": "column",
             "vertical_on_mobile": true,
@@ -1546,6 +1563,8 @@
             "custom_width_mobile": 100,
             "height": "fit",
             "custom_height": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
             "background_media": "none",
             "video_position": "cover",
             "background_image_position": "cover",
@@ -1561,7 +1580,7 @@
           "blocks": {
             "heading": {
               "type": "text",
-              "name": "t:names.heading",
+              "name": "Heading",
               "settings": {
                 "text": "<h2>Customer care</h2>",
                 "width": "100%",
@@ -1582,7 +1601,7 @@
             },
             "text": {
               "type": "text",
-              "name": "t:names.description",
+              "name": "Description",
               "settings": {
                 "text": "<p>We're always on your side: keeping our loyal customers happy is our top priority and number one goal.</p>",
                 "width": "100%",
@@ -1616,6 +1635,7 @@
         "gap": 16,
         "section_width": "page-width",
         "section_height": "",
+        "color_scheme": "",
         "background_media": "none",
         "video_position": "cover",
         "background_image_position": "cover",
@@ -1628,107 +1648,13 @@
       }
     },
     {
-      "name": "t:names.image_compare",
-      "category": "t:categories.storytelling",
-      "blocks": {
-        "group_EhJ6aA": {
-          "type": "group",
-          "name": "t:names.content",
-          "settings": {
-            "horizontal_alignment_flex_direction_column": "center",
-            "gap": 30,
-            "width": "fit-content"
-          },
-          "blocks": {
-            "group_3xi9Yi": {
-              "type": "group",
-              "name": "t:names.text",
-              "settings": {
-                "horizontal_alignment_flex_direction_column": "center"
-              },
-              "blocks": {
-                "text_NpcR4X": {
-                  "type": "text",
-                  "name": "t:names.heading",
-                  "settings": {
-                    "text": "<h2>Find your perfect fit</h2>"
-                  }
-                },
-                "text_jbqPwX": {
-                  "type": "text",
-                  "name": "t:names.subheading",
-                  "settings": {
-                    "text": "<p>Discover the best of both worlds</p>"
-                  }
-                }
-              },
-              "block_order": ["text_NpcR4X", "text_jbqPwX"]
-            },
-            "group_PpcWat": {
-              "type": "group",
-              "name": "t:names.buttons",
-              "settings": {
-                "content_direction": "row",
-                "vertical_on_mobile": false,
-                "horizontal_alignment": "center"
-              },
-              "blocks": {
-                "button_bbnFQ3": {
-                  "type": "button",
-                  "name": "t:names.button",
-                  "settings": {
-                    "label": "t:text_defaults.view_all_button_label",
-                    "link": "shopify://collections/all",
-                    "style_class": "button-secondary",
-                    "custom_width": 34,
-                    "custom_width_mobile": 34
-                  }
-                },
-                "button_cKPkCT": {
-                  "type": "button",
-                  "name": "t:names.button",
-                  "settings": {
-                    "label": "t:text_defaults.shop_now_button_label",
-                    "link": "shopify://collections/all",
-                    "style_class": "button-secondary",
-                    "custom_width": 34,
-                    "custom_width_mobile": 34
-                  }
-                }
-              },
-              "block_order": ["button_bbnFQ3", "button_cKPkCT"]
-            }
-          },
-          "block_order": ["group_3xi9Yi", "group_PpcWat"]
-        },
-        "comparison_slider_RjcBej": {
-          "type": "comparison-slider",
-          "name": "t:names.comparison_slider",
-          "settings": {
-            "image_ratio": "landscape",
-            "width": "custom",
-            "custom_width": 65
-          }
-        }
-      },
-      "block_order": ["group_EhJ6aA", "comparison_slider_RjcBej"],
-      "settings": {
-        "content_direction": "row",
-        "horizontal_alignment": "space-between",
-        "gap": 46,
-        "section_height": "small",
-        "padding-block-start": 40,
-        "padding-block-end": 40
-      }
-    },
-    {
       "name": "t:names.large_logo",
       "category": "t:categories.banners",
       "blocks": {
         "text": {
           "type": "text",
           "settings": {
-            "text": "t:html_defaults.made_with_care_extended",
+            "text": "<p>Made with care and unconditionally loved by our customers, this signature bestseller exceeds all expectations.</p>",
             "max_width": "narrow"
           }
         },
@@ -1745,6 +1671,7 @@
         "vertical_alignment_flex_direction_column": "space-between",
         "gap": 16,
         "section_height": "medium",
+        "color_scheme": "scheme-3",
         "padding-block-start": 40,
         "padding-block-end": 40
       }

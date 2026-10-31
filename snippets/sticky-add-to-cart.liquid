@@ -1,0 +1,180 @@
+{%- doc -%}
+  Renders a fixed bottom bar (mobile only) that mirrors the product's price and Add to cart
+  button. Always visible on load (not scroll-triggered) — the normal in-page Add to cart
+  button doesn't carry the discount banner/price treatment, so this is the only place a
+  mobile visitor reliably sees it.
+
+  @param {product} product - The product to render the price/add to cart state for.
+
+  @example
+  {% render 'sticky-add-to-cart', product: closest.product %}
+{%- enddoc -%}
+
+{%- liquid
+  assign selected_variant = product.selected_or_first_available_variant
+  assign atc_price = selected_variant.price
+  assign atc_compare_at_price = selected_variant.compare_at_price
+  assign atc_show_compare_price = false
+  if atc_compare_at_price > atc_price
+    assign atc_show_compare_price = true
+  endif
+
+  # This snippet is only rendered from product-information.liquid (product
+  # templates), but gate explicitly anyway rather than rely on inclusion path.
+  assign show_promo = false
+  if request.page_type == 'product'
+    assign show_promo = true
+  endif
+-%}
+
+{%- if product != blank -%}
+  <script src="{{ 'sticky-add-to-cart.js' | asset_url }}" type="module"></script>
+
+  <sticky-add-to-cart-bar class="sticky-add-to-cart-bar" data-visible>
+    {%- if show_promo and settings.show_prepaid_discount_banner and settings.prepaid_discount_banner_text != blank -%}
+      <div
+        class="add-to-cart-promo-banner sticky-add-to-cart-bar__banner"
+        style="--add-to-cart-promo-banner-color: {{ settings.prepaid_discount_banner_color }};"
+      >
+        {{ settings.prepaid_discount_banner_text }}
+      </div>
+    {%- endif -%}
+    <div class="sticky-add-to-cart-bar__row">
+      {%- assign show_inline_price = false -%}
+      {%- if show_promo and settings.show_price_in_add_to_cart_button -%}
+        {%- assign show_inline_price = true -%}
+      {%- endif -%}
+      {%- unless show_inline_price -%}
+        <div class="sticky-add-to-cart-bar__price">
+          {% render 'price', product_resource: product, show_sale_price_first: true %}
+        </div>
+      {%- endunless -%}
+      <button
+        type="button"
+        class="button sticky-add-to-cart-bar__button{% if show_inline_price %} add-to-cart-button--promo{% endif %}"
+        ref="button"
+        on:click="/handleClick"
+      >
+        {{ 'actions.add_to_cart' | t }}
+        {%- if show_inline_price and atc_price -%}
+          <span class="add-to-cart-text__price-group">
+            <span class="add-to-cart-text__divider" aria-hidden="true">|</span>
+            {%- if atc_show_compare_price -%}
+              <s class="add-to-cart-text__compare-price">{{ atc_compare_at_price | money }}</s>
+            {%- endif -%}
+            <span class="add-to-cart-text__price">{{ atc_price | money }}</span>
+          </span>
+        {%- endif -%}
+      </button>
+    </div>
+  </sticky-add-to-cart-bar>
+{%- endif -%}
+
+{% stylesheet %}
+  .sticky-add-to-cart-bar {
+    position: fixed;
+    inset-inline: 12px;
+    bottom: 20px;
+    z-index: var(--layer-sticky, 10);
+    display: none;
+    flex-direction: column;
+    background: var(--color-background);
+    border-radius: var(--style-border-radius-buttons-primary, 10px);
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+    transform: translateY(calc(100% + 40px));
+    transition: transform var(--animation-speed, 0.2s) var(--animation-easing, ease);
+  }
+
+  .sticky-add-to-cart-bar__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-sm, 0.7rem);
+    width: 100%;
+    padding: 0;
+  }
+
+  /* Hide outright whenever a drawer/modal (menu, cart, filters, search, …) is open —
+     they all set scroll-lock on <html> — instead of relying on relative z-index,
+     since this bar and those overlays don't reliably share one stacking context. */
+  html[scroll-lock] .sticky-add-to-cart-bar {
+    display: none;
+  }
+
+  .sticky-add-to-cart-bar[data-visible] {
+    transform: translateY(0);
+  }
+
+  .sticky-add-to-cart-bar__price {
+    flex-shrink: 0;
+  }
+
+  /* Stack sale price and strike price on separate lines */
+  .sticky-add-to-cart-bar__price > * {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .sticky-add-to-cart-bar__price .price {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .sticky-add-to-cart-bar__price .compare-at-price {
+    font-size: 15px;
+    font-weight: 400;
+    color: #777;
+    text-decoration: line-through;
+  }
+
+  /* Add to cart — reuses the same --button-* custom properties the real
+     button's .add-to-cart-button--promo class sets (see add-to-cart-button.liquid),
+     so this is guaranteed to resolve to the identical color, not just a
+     separately-maintained copy of the same tokens. */
+  .sticky-add-to-cart-bar__button {
+    flex: 1;
+    max-width: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    min-height: 0;
+    padding-block: 0;
+    padding-inline: 16px;
+    background: var(--button-background-color, var(--color-primary-button-background));
+    color: var(--button-color, var(--color-primary-button-text));
+    border: 1px solid var(--button-border-color, var(--color-primary-button-border));
+    border-radius: 0px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    gap: var(--gap-3xs, 0.3rem);
+  }
+
+  .sticky-add-to-cart-bar__button:hover {
+    background: var(--color-primary-button-hover-background);
+    border-color: var(--color-primary-button-hover-border);
+    color: var(--color-primary-button-hover-text);
+  }
+
+  /* When the price moves inside the button, it takes the full row. */
+  .sticky-add-to-cart-bar__row:has(.add-to-cart-button--promo) .sticky-add-to-cart-bar__button {
+    max-width: 100%;
+  }
+
+  @media screen and (min-width: 750px) {
+    .sticky-add-to-cart-bar {
+      display: none !important;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .sticky-add-to-cart-bar {
+      display: flex;
+    }
+  }
+{% endstylesheet %}

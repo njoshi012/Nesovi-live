@@ -1,225 +1,254 @@
-{%- doc -%}
-  "Make your own bundle" — a build-a-box wizard where the customer picks a
-  required number of items per step, then adds the bundle to cart as a single
-  line carrying `_ITEM{n}` / `_bundle_product{n}` properties.
+{% comment %}Flexi Box Bundle Functionality{% endcomment %}
 
-  Steps and their eligible products are configured entirely through
-  metafields on this product/its linked collections, not through this
-  section's settings:
-    - product.metafields.custom.flexi_box_bundle: list of steps, each with
-      `.collection` (a collection reference), `.mandatory_products` (how many
-      the customer must pick), and `.display_products` (how many to show).
-    - collection.metafields.custom.flexi_box_variant_sort_order: optional
-      list of variant GIDs controlling display order for that step's collection.
-{%- enddoc -%}
+{{ 'make-your-own-bundle-style.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'make-your-own-bundle-script.js' | asset_url }}" defer="defer"></script>
 
-{{ 'make-your-own-bundle.css' | asset_url | stylesheet_tag }}
-<script
-  src="{{ 'make-your-own-bundle.js' | asset_url }}"
-  type="module"
-></script>
+{%- assign flexi_box_bundle = product.metafields.custom.flexi_box_bundle.value -%}
 
-{%- liquid
-  assign flexi_box_bundle = product.metafields.custom.flexi_box_bundle.value
-  assign steps_count = flexi_box_bundle.size
-
-  assign required_total = 0
-  for flexi_box_step in flexi_box_bundle
-    assign required_total = required_total | plus: flexi_box_step.mandatory_products
-  endfor
-
-  assign selected_variant = product.selected_or_first_available_variant
-  assign bundle_builder_form_id = 'BundleBuilderForm-' | append: section.id
--%}
-
-{%- if flexi_box_bundle.size > 0 -%}
-  <bundle-builder-component
-    id="BundleBuilder-{{ section.id }}"
-    class="bundle-builder"
-    data-variant-id="{{ selected_variant.id }}"
-    data-sku="{{ selected_variant.sku }}"
-    data-price="{{ selected_variant.price }}"
-    data-required-total="{{ required_total }}"
-    on:submit="/handleSubmit"
-  >
-    {%- form 'product', product, id: bundle_builder_form_id, data-type: 'add-to-cart-form' -%}
-      <input
-        type="hidden"
-        name="id"
-        value="{{ selected_variant.id }}"
-      >
-
-      <ul class="bundle-builder__tabs">
-        {%- for flexi_box_step in flexi_box_bundle -%}
-          <li>
-            <button
-              type="button"
-              class="bundle-builder__tab{% if forloop.first %} bundle-builder__tab--active{% endif %}"
-              data-tab="{{ forloop.index }}"
-              ref="tabs[]"
-              on:click="/handleTabClick"
-            >
-              {%- if steps_count > 1 -%}
-                <span class="bundle-builder__step-label">Step {{ forloop.index }}</span>
-              {%- endif -%}
-              <span class="bundle-builder__step-bubble">
-                <span
-                  class="bundle-builder__step-counter"
-                  data-tab="{{ forloop.index }}"
-                  ref="stepCounters[]"
-                >
-                  <svg
-                    class="bundle-builder__step-counter-check"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 11 9"
-                    fill="none"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      clip-rule="evenodd"
-                      d="M9.66802 1.37429L4.48642 7.85309L0.416016 4.46069L1.18402 3.53909L4.31362 6.14669L8.73201 0.625488L9.66802 1.37429Z"
-                      fill="#fff"
-                      stroke="#fff"
-                      stroke-width="0.5"
-                    />
-                  </svg>
-                </span>
-              </span>
-              <span class="bundle-builder__step-hint">
-                Choose {{ flexi_box_step.mandatory_products }} · {{ flexi_box_step.collection.value.title }}
-              </span>
-            </button>
-          </li>
-        {%- endfor -%}
-      </ul>
-
-      <div class="bundle-builder__search">
-        <label class="visually-hidden" for="BundleBuilderSearch-{{ section.id }}">Search</label>
-        <input
-          type="text"
-          id="BundleBuilderSearch-{{ section.id }}"
-          class="bundle-builder__search-input"
-          ref="searchInput"
-          placeholder="Search…"
-          on:input="/handleSearchInput"
-        >
-        <button
-          type="button"
-          class="bundle-builder__search-clear"
-          aria-label="{{ 'actions.clear' | t }}"
-          on:click="/handleSearchClear"
-        >
-          {{- 'icon-close.svg' | inline_asset_content -}}
-        </button>
+<div class="flexi-box-bundle">
+  <product-form class="sticky-cart__form">
+    {%- form 'product', product,
+      class: 'product__form',
+      id: 'flexi-box-form',
+      novalidate: 'novalidate',
+      data-type: 'add-to-cart-form',
+      data-variant-id: product.selected_or_first_available_variant.id,
+      data-sku: product.selected_or_first_available_variant.sku,
+      data-price: product.selected_or_first_available_variant.price
+    -%}
+      {% # Tab menu %}
+      <div class="tab-menu sticky-header center">
+        <div class="excluded-from-discount-combos">🎁 Make Rakhi Extra Special — Gift Her a Jewellery Box</div>
+        <ul class="tab-items">
+          {%- assign steps_count = flexi_box_bundle.count -%}
+          {%- for flexi_box_step in flexi_box_bundle -%}
+            <li class="tab-item">
+              <div class="tab{% if forloop.first %} active-tab{% endif %}" data-id="tab{{ forloop.index }}">
+                <div class="sticky-header-bubble">
+                  <h5 class="step-heading">{% if steps_count > 1 %}STEP {{ forloop.index }}{% else %}{{ product.title }}{% endif %}</h5>
+                  <div class="bubble-wrapper">
+                    <span class="bubble-counter" id="checkbox_count_tab_{{ forloop.index }}_product"></span>
+                  </div>
+                  {% if forloop.index == 1 %}
+                    <p class="collection-label">1 Necklace 📿</p>
+                  {% elsif forloop.index == 2 %}
+                    <p class="collection-label">1 Earrings ✨</p>
+                  {% elsif forloop.index == 3 %}
+                    <p class="collection-label">1 Ring 💍</p>
+                  {% elsif forloop.index == 4 %}
+                    <p class="collection-label">1 Bracelet ✨</p>
+                  {% endif %}
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+        <div id="scroll-to-reviews" class="nesovi-badge">
+          💯 Skin Safe | ⭐ Loved by 1000+ Customers
+        </div>
       </div>
-
+      {% # end of tab-menu %}
+      <script>
+        let totalproductSelection = 0;
+      </script>
+      <hr class="hr-divider" style="margin:0 0 10px;">
+      {% # Custom search bar code %}
+      <div class="search center hidden">
+        <input
+          id="searchbar"
+          type="text"
+          class="search-field"
+          name="search"
+          placeholder="Search..."
+          onkeypress="return event.keyCode != 13;"
+        >
+        <span class="search-clear">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+            <path d="M12.0007 10.5865L16.9504 5.63672L18.3646 7.05093L13.4149 12.0007L18.3646 16.9504L16.9504 18.3646L12.0007 13.4149L7.05093 18.3646L5.63672 16.9504L10.5865 12.0007L5.63672 7.05093L7.05093 5.63672L12.0007 10.5865Z" fill="rgba(191,191,191,1)"></path>
+          </svg>
+        </span>
+      </div>
+      {% # Custom search bar code Ends %}
+      {%- assign item_index = 0 -%}
       {%- for flexi_box_step in flexi_box_bundle -%}
-        {%- liquid
-          assign tab_index = forloop.index
-          assign flexi_box_collection = flexi_box_step.collection.value
-          assign product_limit = flexi_box_step.display_products
-          assign sort_order = flexi_box_collection.metafields.custom.flexi_box_variant_sort_order.value
-          assign product_index = 0
-          assign rendered_variant_ids = ''
-        -%}
+        {%- assign tab_index = forloop.index -%}
+        <script>
+          totalproductSelection = totalproductSelection + Number({{ flexi_box_step.mandatory_products }});
+        </script>
 
         <div
-          class="bundle-builder__panel{% if forloop.first %} bundle-builder__panel--active{% endif %}"
-          data-tab="{{ tab_index }}"
-          data-limit="{{ flexi_box_step.mandatory_products }}"
-          ref="panels[]"
+          class="tab-content{% if forloop.first %} active-tab-content{% endif %}"
+          data-product-limit="{{ flexi_box_step.mandatory_products }}"
+          data-id="tab{{ tab_index }}"
         >
-          <ul class="bundle-builder__grid">
-            {%- if sort_order != blank -%}
-              {%- for sorted_variant in sort_order -%}
-                {%- for item_product in flexi_box_collection.products -%}
-                  {%- for item_variant in item_product.variants -%}
-                    {%- if item_variant.id == sorted_variant.id -%}
-                      {%- assign product_index = product_index | plus: 1 -%}
-                      {%- if product_limit >= product_index -%}
-                        {%- render 'make-your-own-bundle-item',
-                          product_flexi: item_product,
-                          variant: item_variant,
-                          product: product,
-                          tab_index: tab_index
-                        -%}
-                      {%- endif -%}
-                      {%- assign rendered_variant_ids = rendered_variant_ids | append: item_variant.id | append: ',' -%}
+          {%- assign flexi_box_collection = flexi_box_step.collection.value -%}
+          {%- assign variant_ids = '' -%}
+          {%- assign product_variant_gids = flexi_box_collection.metafields.custom.flexi_box_variant_sort_order.value -%}
+
+          <ul id="collection-list" style="margin-top: 95px;">
+            <div class="row collection page-width">
+              {%- assign product_limit = flexi_box_step.display_products -%}
+              {%- assign product_index = 0 -%}
+
+              {%- if product_variant_gids != blank -%}
+                {%- for product_variant in product_variant_gids -%}
+                  {%- for product_flexi in flexi_box_collection.products -%}
+                    {%- for variant in product_flexi.variants -%}
+                      {%- if variant.id == product_variant.id -%}
+                        {%- assign product_index = product_index | plus: 1 -%}
+                        {%- if product_limit >= product_index -%}
+                          {% assign item_index = item_index | plus: 1 %}
+                          {%- render 'make-your-own-bundle-item',
+                            product_flexi: product_flexi,
+                            variant: variant,
+                            product: product,
+                            tab_index: tab_index,
+                            product_index: product_index,
+                            item_index: item_index
+                          -%}
+                        {% endif %}
+                        {% assign variant_ids = variant_ids | append: variant.id | append: ',' %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                {% endfor %}
+              {% endif %}
+
+              {%- for product_flexi in flexi_box_collection.products -%}
+                {%- for variant in product_flexi.variants -%}
+                  {%- unless variant_ids contains variant.id -%}
+                    {%- assign product_index = product_index | plus: 1 -%}
+                    {%- if product_limit >= product_index -%}
+                      {% assign item_index = item_index | plus: 1 %}
+                      {%- render 'make-your-own-bundle-item',
+                        product_flexi: product_flexi,
+                        variant: variant,
+                        product: product,
+                        tab_index: tab_index,
+                        product_index: product_index,
+                        item_index: item_index
+                      -%}
                     {%- endif -%}
-                  {%- endfor -%}
+                  {%- endunless -%}
                 {%- endfor -%}
               {%- endfor -%}
-            {%- endif -%}
-
-            {%- for item_product in flexi_box_collection.products -%}
-              {%- for item_variant in item_product.variants -%}
-                {%- unless rendered_variant_ids contains item_variant.id -%}
-                  {%- assign product_index = product_index | plus: 1 -%}
-                  {%- if product_limit >= product_index -%}
-                    {%- render 'make-your-own-bundle-item',
-                      product_flexi: item_product,
-                      variant: item_variant,
-                      product: product,
-                      tab_index: tab_index
-                    -%}
-                  {%- endif -%}
-                {%- endunless -%}
-              {%- endfor -%}
-            {%- endfor -%}
+            </div>
           </ul>
         </div>
+        {% # End of tab %}
       {%- endfor -%}
 
-      <div class="bundle-builder__sticky-bar">
-        <div class="bundle-builder__sticky-bar-inner">
-          <div class="bundle-builder__sticky-product">
-            {{
-              product.featured_image
-              | image_url: width: 150
-              | image_tag: loading: 'lazy', fetchpriority: 'low'
-            }}
-            <h3>{{ product.title }}</h3>
+      <div class="sticky_cart">
+        <div class="product-details page-width">
+          <div class="prd-details prd-details-left">
+            <div class="prd-image-title">
+              {{ product.featured_image | image_url: width: 150 | image_tag: loading: 'lazy', fetchpriority: 'low', class: 'featured-img' }}
+              <h3>{{ product.title }}</h3>
+            </div>
           </div>
-
-          <span class="bundle-builder__price">{{ product.price | money }}</span>
-
-          <button
-            type="submit"
-            class="bundle-builder__submit"
-            ref="submitButton"
-            data-available="{{ selected_variant.available }}"
-            disabled
-          >
-            {%- if selected_variant.available -%}
-              {{ 'actions.add_to_cart' | t }}
-            {%- else -%}
-              {{ 'blocks.sold_out' | t }}
-            {%- endif -%}
-          </button>
+          <div class="prd-details prd-details-right">
+            <div class="prd-image-price-cart">
+              <div class="prd-price">Total: {{ product.price | money | remove: '.00' }}/-</div>
+              <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+              <button
+                type="submit"
+                id="submit-btn"
+                name="add"
+                class="flex--box-ATC-btn btn btn--large btn--submit product__submit__add"
+                style="display: inline-block; pointer-events: none; background-color: #ddd;"
+                {%- if product.selected_or_first_available_variant.available == false %}
+                  disabled="disabled"
+                {% endif -%}
+                data-add-to-cart
+              >
+                {%- liquid
+                  if product.selected_or_first_available_variant.available
+                    echo 'products.product.add_to_cart' | t
+                  else
+                    echo 'products.product.sold_out' | t
+                  endif
+                -%}
+                <em class="loader loader--line"><em class="loader-indeterminate"></em></em>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     {%- endform -%}
+  </product-form>
+</div>
+{% # end of container %}
 
-    {%- render 'make-your-own-bundle-item-popup' -%}
+{% # Flexi Box Bundle Item Popup %}
+{%- render 'make-your-own-bundle-item-popup' -%}
 
-    <div
-      class="bundle-builder__toast"
-      ref="toast"
-    >
-      <span ref="toastText"></span>
-      added to box
+<div class="message-bar is-hidden">
+  <div class="message message--green">
+    <div class="message-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="9" viewBox="0 0 11 9" fill="none">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M9.66802 1.37429L4.48642 7.85309L0.416016 4.46069L1.18402 3.53909L4.31362 6.14669L8.73201 0.625488L9.66802 1.37429Z" fill="#000" stroke="#000" stroke-width="0.5"/>
+      </svg>
     </div>
-  </bundle-builder-component>
-{%- endif -%}
+    <div class="message-body">
+      <p>
+        <span></span>
+        added to box
+      </p>
+    </div>
+  </div>
+</div>
 
-{% schema %}
+{% comment %} Script to highlight bundle product added to box {% endcomment %}
+<style>
+  .nesovi-badge {
+    cursor: pointer;
+    font-weight: 600;
+    text-align: center;
+    margin: 10px 0;
+  }
+  .nesovi-badge:hover {
+    text-decoration: underline;
+  }
+</style>
+<script>
+  const addToBoxBtns = document.querySelectorAll(".add-to-box");
+
+  function checkIfAddedToBox(e){
+    const parentElement = e.target.closest(".collection-item");
+    const elementToCheck = parentElement.querySelector(".added_to_cart");
+    const elementToBeHighlighted = parentElement.querySelector(".slider-wrapper");
+    
+    if(elementToCheck.classList.contains("_hidden")){
+      elementToBeHighlighted.classList.remove("flexi-box-product-highlight");
+    }else{
+      elementToBeHighlighted.classList.add("flexi-box-product-highlight");
+    }
+  }
+
+  if(addToBoxBtns && addToBoxBtns.length > 0){
+    for(let i=0; i<addToBoxBtns.length; i++){
+      addToBoxBtns[i].addEventListener("click", checkIfAddedToBox);
+    }
+  }
+
+  document.getElementById('scroll-to-reviews').addEventListener('click', function() {
+    const reviewSection = document.querySelector('.jdgm-horizon-widget');
+    if (reviewSection) {
+      reviewSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+{% comment %} end - Script to highlight bundle product added to box {% endcomment %}
+
+{%- schema -%}
 {
-  "name": "Make your own bundle",
+  "name": "Flexi box bundle",
   "settings": [],
   "presets": [
     {
-      "name": "Make your own bundle"
+      "name": "Flexi box bundle"
     }
   ]
 }
-{% endschema %}
+{%- endschema -%}

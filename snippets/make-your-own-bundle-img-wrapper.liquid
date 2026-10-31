@@ -1,68 +1,168 @@
-{%- doc -%}
-  Renders the image slider for one bundle item card. Reused by both the grid
-  card and (cloned client-side, see assets/make-your-own-bundle.js) the info
-  popup — behavior lives entirely in <bundle-builder-component>.
+{% comment %}Flexi Box Image Wrapper Liquid code{% endcomment %}
+{% comment %}
+{%- render 'flexi-box-bundle-img-wrapper', product_flexi: product_flexi, variant: variant -%}
+{% endcomment %}
 
-  @param {object} product_flexi - The product this item represents
-  @param {object} variant - The specific variant this item represents
+{% assign max_images = 5 %}
+{% assign image_count = 0 %}
 
-  @example
-  {%- render 'make-your-own-bundle-img-wrapper', product_flexi: product_flexi, variant: variant -%}
-{%- enddoc -%}
-
-{%- liquid
-  assign max_images = 5
-  assign image_count = 0
--%}
-
-{%- capture slides -%}
-  {%- if product_flexi.has_only_default_variant or variant.featured_image == blank -%}
-    {%- for image in product_flexi.images limit: max_images -%}
-      <div class="bundle-builder__slide">
+{% capture slides %}
+  {% if product_flexi.has_only_default_variant or variant.featured_image == blank %}
+    {% for image in product_flexi.images limit: max_images %}
+      <div class="grid-item slider-slide">
         {{ image | image_url: width: 500 | image_tag: loading: 'lazy', fetchpriority: 'low' }}
       </div>
-      {%- assign image_count = image_count | plus: 1 -%}
-    {%- endfor -%}
-  {%- else -%}
-    <div class="bundle-builder__slide">
+      {% assign image_count = image_count | plus: 1 %}
+    {% endfor %}
+  {% else %}
+    {% # 1. First slide = variant image %}
+    <div class="grid-item slider-slide">
       {{ variant.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', fetchpriority: 'low' }}
     </div>
-    {%- assign image_count = 1 -%}
+    {% assign image_count = 1 %}
 
-    {%- for image in product_flexi.images -%}
-      {%- if forloop.index > 1 and image_count < max_images and image != variant.featured_image -%}
-        <div class="bundle-builder__slide">
-          {{ image | image_url: width: 500 | image_tag: loading: 'lazy', fetchpriority: 'low' }}
-        </div>
-        {%- assign image_count = image_count | plus: 1 -%}
-      {%- endif -%}
-    {%- endfor -%}
-  {%- endif -%}
-{%- endcapture -%}
+    {% # 2. Next slides = product images from 2nd image onwards %}
+    {% for image in product_flexi.images %}
+      {% if forloop.index > 1 and image_count < max_images %}
+        {% if image != variant.featured_image %}
+          <div class="grid-item slider-slide">
+            {{ image | image_url: width: 500 | image_tag: loading: 'lazy', fetchpriority: 'low' }}
+          </div>
+          {% assign image_count = image_count | plus: 1 %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endcapture %}
 
-<div class="bundle-builder__slider">
-  <div
-    class="bundle-builder__slider-track"
-    role="list"
-  >
+<div class="product-images-slider">
+  <div class="grid-col slider-wrapper" role="list">
     {{ slides }}
   </div>
-  {%- if image_count > 1 -%}
-    <div
-      class="bundle-builder__slider-dots"
-      role="tablist"
-    >
-      {%- for i in (1..max_images) -%}
-        {%- if i <= image_count -%}
-          <button
-            type="button"
-            class="bundle-builder__slider-dot{% if i == 1 %} bundle-builder__slider-dot--active{% endif %}"
-            aria-label="Go to image {{ i }}"
-            data-index="{{ i | minus: 1 }}"
-            on:click="/handleDotClick"
-          ></button>
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
-  {%- endif -%}
+  <div class="slider-pagination">
+    {% for i in (1..max_images) %}
+      {% if i <= image_count %}
+        <button
+          class="slider-dot{% if i == 1 %} active{% endif %}"
+          aria-label="Go to slide {{ i | minus: 1 }}"
+          data-index="{{ i | minus: 1 }}"
+          type="button"
+        ></button>
+      {% endif %}
+    {% endfor %}
+  </div>
 </div>
+
+<script>
+  function initProductImagesSlider(component) {
+    const slider = component.querySelector('.slider-wrapper');
+    const dots = component.querySelectorAll('.slider-dot');
+    const slides = slider.querySelectorAll('.slider-slide');
+
+    // Dot click event
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function (e) {
+        e.preventDefault();
+        const idx = parseInt(this.getAttribute('data-index'), 10);
+        if (slides[idx]) {
+          const slideLeft = slides[idx].offsetLeft;
+          slider.scrollTo({
+            left: slideLeft,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Update active dot on scroll
+    slider.addEventListener('scroll', function () {
+      const sliderRect = slider.getBoundingClientRect();
+      let minDiff = Infinity;
+      let activeIdx = 0;
+
+      slides.forEach((slide, idx) => {
+        const rect = slide.getBoundingClientRect();
+        const diff = Math.abs(rect.left - sliderRect.left);
+        if (diff < minDiff) {
+          minDiff = diff;
+          activeIdx = idx;
+        }
+      });
+
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === activeIdx);
+      });
+    });
+  }
+
+  // Initialize any sliders present on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.product-images-slider').forEach(initProductImagesSlider);
+  });
+</script>
+
+<style>
+  .product-images-slider {
+    position: relative;
+    display: block;
+  }
+  .slider-wrapper {
+    position: relative;
+    flex-wrap: inherit;
+    overflow-y: hidden;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    /* scrollbar-width: thin; */
+    -ms-overflow-style: none;
+    scrollbar-width: none !important;
+    border-radius: 4px;
+  }
+  .grid-col {
+    display: flex;
+    margin-bottom: 1rem;
+    padding: 0;
+    list-style: none;
+    column-gap: 0.5rem;
+  }
+  .slider-wrapper .slider-slide {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  .grid-col .grid-item {
+    max-width: 100%;
+    width: 100%;
+  }
+  .slider-slide img {
+    width: 100%;
+    height: auto;
+  }
+  .slider-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .slider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: none;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.2s;
+    padding: 0;
+  }
+  .slider-dot.active {
+    background: #333;
+  }
+  /* Desktop CSS */
+  @media screen and (min-width: 750px) {
+    .slider-dot {
+      width: 6px;
+      height: 6px;
+    }
+  }
+</style>

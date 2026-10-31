@@ -115,7 +115,7 @@
   {
     "name": "theme_info",
     "theme_name": "Horizon",
-    "theme_version": "4.1.4",
+    "theme_version": "2.1.5",
     "theme_author": "Shopify",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
     "theme_support_url": "https://support.shopify.com/"
@@ -139,30 +139,6 @@
         "info": "t:content.inverse_logo_info"
       },
       {
-        "type": "range",
-        "id": "logo_height",
-        "label": "t:settings.desktop_height",
-        "min": 12,
-        "max": 100,
-        "step": 1,
-        "unit": "px",
-        "default": 36,
-        "visible_if": "{{ settings.logo != blank or settings.logo_inverse != blank }}",
-        "info": "t:info.logo_height"
-      },
-      {
-        "type": "range",
-        "id": "logo_height_mobile",
-        "label": "t:settings.mobile_height",
-        "min": 12,
-        "max": 100,
-        "step": 1,
-        "unit": "px",
-        "default": 28,
-        "visible_if": "{{ settings.logo != blank or settings.logo_inverse != blank }}",
-        "info": "t:info.logo_height"
-      },
-      {
         "type": "image_picker",
         "id": "favicon",
         "label": "t:settings.favicon"
@@ -173,11 +149,286 @@
     "name": "t:names.colors",
     "settings": [
       {
-        "type": "color_palette",
-        "id": "color_palette",
-        "default": {
-          "background": "#ffffff",
-          "foreground": "#000000"
+        "type": "color_scheme_group",
+        "id": "color_schemes",
+        "definition": [
+          {
+            "type": "color",
+            "id": "background",
+            "label": "t:settings.background",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "foreground_heading",
+            "label": "t:settings.headings",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "foreground",
+            "label": "t:settings.text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary",
+            "label": "t:settings.primary_color",
+            "default": "#000F9F",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_hover",
+            "label": "t:settings.primary_hover_color",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "border",
+            "label": "t:settings.borders",
+            "default": "#E6E6E6",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "shadow",
+            "label": "t:settings.shadow_color",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "header",
+            "content": "t:names.primary_button"
+          },
+          {
+            "type": "color",
+            "id": "primary_button_background",
+            "label": "t:settings.background",
+            "default": "#000F9F",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_button_text",
+            "label": "t:settings.text",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_button_border",
+            "label": "t:settings.borders",
+            "default": "#000F9F",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_button_hover_background",
+            "label": "t:settings.hover_background",
+            "default": "#000F9F",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_button_hover_text",
+            "label": "t:settings.hover_text",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "primary_button_hover_border",
+            "label": "t:settings.hover_borders",
+            "default": "#000F9F",
+            "alpha": true
+          },
+          {
+            "type": "header",
+            "content": "t:names.secondary_button"
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_background",
+            "label": "t:settings.background",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_text",
+            "label": "t:settings.text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_border",
+            "label": "t:settings.borders",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_hover_background",
+            "label": "t:settings.hover_background",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_hover_text",
+            "label": "t:settings.hover_text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "secondary_button_hover_border",
+            "label": "t:settings.hover_borders",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "header",
+            "content": "t:names.inputs"
+          },
+          {
+            "type": "color",
+            "id": "input_background",
+            "label": "t:settings.background",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "input_text_color",
+            "label": "t:settings.text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "input_border_color",
+            "label": "t:settings.borders",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "input_hover_background",
+            "label": "t:settings.hover_background",
+            "default": "#F5F5F5",
+            "alpha": true
+          },
+          {
+            "type": "header",
+            "content": "t:names.variants"
+          },
+          {
+            "type": "color",
+            "id": "variant_background_color",
+            "label": "t:settings.background",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "variant_text_color",
+            "label": "t:settings.text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "variant_border_color",
+            "label": "t:settings.borders",
+            "default": "#E6E6E6",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "variant_hover_background_color",
+            "label": "t:settings.hover_background",
+            "default": "#F5F5F5",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "variant_hover_text_color",
+            "label": "t:settings.hover_text",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "variant_hover_border_color",
+            "label": "t:settings.hover_borders",
+            "default": "#E6E6E6",
+            "alpha": true
+          },
+          {
+            "type": "header",
+            "content": "t:names.selected_variants"
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_background_color",
+            "label": "t:settings.background",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_text_color",
+            "label": "t:settings.text",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_border_color",
+            "label": "t:settings.borders",
+            "default": "#000000",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_hover_background_color",
+            "label": "t:settings.hover_background",
+            "default": "#1A1A1A",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_hover_text_color",
+            "label": "t:settings.hover_text",
+            "default": "#FFFFFF",
+            "alpha": true
+          },
+          {
+            "type": "color",
+            "id": "selected_variant_hover_border_color",
+            "label": "t:settings.hover_borders",
+            "default": "#1A1A1A",
+            "alpha": true
+          }
+        ],
+        "role": {
+          "text": "foreground",
+          "background": "background",
+          "links": "primary",
+          "icons": "foreground",
+          "primary_button": "primary_button_background",
+          "on_primary_button": "primary_button_text",
+          "primary_button_border": "primary_button_border",
+          "secondary_button": "secondary_button_background",
+          "on_secondary_button": "secondary_button_text",
+          "secondary_button_border": "secondary_button_border"
         }
       }
     ]
@@ -185,21 +436,6 @@
   {
     "name": "t:names.typography",
     "settings": [
-      {
-        "type": "header",
-        "content": "t:content.colors"
-      },
-      {
-        "type": "color",
-        "id": "page_text_color",
-        "label": "t:settings.page_text_color",
-        "default": "{{ settings.color_palette.foreground }}",
-        "info": "t:info.page_text_color_default_info"
-      },
-      {
-        "type": "paragraph",
-        "content": "t:content.page_text_color_contrast_info"
-      },
       {
         "type": "header",
         "content": "t:content.fonts"
@@ -1214,12 +1450,6 @@
     "name": "t:names.page_layout",
     "settings": [
       {
-        "type": "color",
-        "id": "page_background_color",
-        "label": "t:settings.page_background_color",
-        "default": "{{ settings.color_palette.background }}"
-      },
-      {
         "type": "select",
         "id": "page_width",
         "label": "t:settings.page_width",
@@ -1327,27 +1557,16 @@
         "content": "t:settings.colors"
       },
       {
-        "type": "color",
-        "id": "badge_sale_background_color",
-        "label": "t:settings.badge_sale_background_color",
-        "default": "{{ settings.color_palette.foreground }}"
+        "type": "color_scheme",
+        "id": "badge_sale_color_scheme",
+        "label": "t:settings.badge_sale_color_scheme",
+        "default": "scheme-4"
       },
       {
-        "type": "color",
-        "id": "badge_sale_text_color",
-        "label": "t:settings.badge_sale_text_color"
-      },
-      {
-        "type": "color",
-        "id": "badge_sold_out_background_color",
-        "label": "t:settings.badge_sold_out_background_color",
-        "default": "{{ settings.color_palette.background }}"
-      },
-      {
-        "type": "color",
-        "id": "badge_sold_out_text_color",
-        "label": "t:settings.badge_sold_out_text_color",
-        "default": "{{ settings.color_palette.foreground }}"
+        "type": "color_scheme",
+        "id": "badge_sold_out_color_scheme",
+        "label": "t:settings.badge_sold_out_color_scheme",
+        "default": "scheme-5"
       },
       {
         "type": "header",
@@ -1403,27 +1622,6 @@
         "content": "t:options.button_primary"
       },
       {
-        "type": "color",
-        "id": "palette_primary_button_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_primary_button_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.background }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_primary_button_border",
-        "label": "t:settings.borders",
-        "default": "{{ settings.color_palette.background }}",
-        "alpha": true
-      },
-      {
         "type": "range",
         "id": "primary_button_border_width",
         "min": 0,
@@ -1461,6 +1659,46 @@
       },
       {
         "type": "select",
+        "id": "button_font_weight_primary",
+        "label": "t:settings.button_text_weight",
+        "options": [
+          {
+            "value": "default",
+            "label": "t:options.default"
+          },
+          {
+            "value": "100",
+            "label": "t:options.thin"
+          },
+          {
+            "value": "300",
+            "label": "t:options.light"
+          },
+          {
+            "value": "400",
+            "label": "t:options.regular"
+          },
+          {
+            "value": "500",
+            "label": "t:options.medium"
+          },
+          {
+            "value": "600",
+            "label": "t:options.semibold"
+          },
+          {
+            "value": "700",
+            "label": "t:options.bold"
+          },
+          {
+            "value": "900",
+            "label": "t:options.black"
+          }
+        ],
+        "default": "default"
+      },
+      {
+        "type": "select",
         "id": "button_text_case_primary",
         "label": "t:settings.button_text_case",
         "options": [
@@ -1478,27 +1716,6 @@
       {
         "type": "header",
         "content": "t:options.button_secondary"
-      },
-      {
-        "type": "color",
-        "id": "palette_secondary_button_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.background }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_secondary_button_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_secondary_button_border",
-        "label": "t:settings.borders",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
       },
       {
         "type": "range",
@@ -1535,6 +1752,46 @@
           }
         ],
         "default": "body"
+      },
+      {
+        "type": "select",
+        "id": "button_font_weight_secondary",
+        "label": "t:settings.button_text_weight",
+        "options": [
+          {
+            "value": "default",
+            "label": "t:options.default"
+          },
+          {
+            "value": "100",
+            "label": "t:options.thin"
+          },
+          {
+            "value": "300",
+            "label": "t:options.light"
+          },
+          {
+            "value": "400",
+            "label": "t:options.regular"
+          },
+          {
+            "value": "500",
+            "label": "t:options.medium"
+          },
+          {
+            "value": "600",
+            "label": "t:options.semibold"
+          },
+          {
+            "value": "700",
+            "label": "t:options.bold"
+          },
+          {
+            "value": "900",
+            "label": "t:options.black"
+          }
+        ],
+        "default": "default"
       },
       {
         "type": "select",
@@ -1613,23 +1870,19 @@
         "label": "t:settings.font_price",
         "options": [
           {
-            "value": "body",
+            "value": "primary",
             "label": "t:options.body"
           },
           {
-            "value": "subheading",
+            "value": "secondary",
             "label": "t:options.subheading"
           },
           {
-            "value": "heading",
-            "label": "t:options.heading"
-          },
-          {
-            "value": "accent",
-            "label": "t:options.accent"
+            "value": "tertiary",
+            "label": "t:options.tertiary"
           }
         ],
-        "default": "subheading"
+        "default": "secondary"
       },
       {
         "type": "checkbox",
@@ -1637,10 +1890,6 @@
         "label": "t:settings.auto_open_cart_drawer",
         "default": false,
         "visible_if": "{{ settings.cart_type == 'drawer' }}"
-      },
-      {
-        "type": "header",
-        "content": "t:content.cart_features"
       },
       {
         "type": "checkbox",
@@ -1675,19 +1924,13 @@
         "default": true
       },
       {
-        "type": "url",
-        "id": "empty_cart_button_link",
-        "label": "t:settings.empty_cart_button_link",
-        "default": "/collections/all"
-      },
-      {
         "type": "header",
         "content": "t:content.product_media"
       },
       {
         "type": "select",
         "id": "cart_thumbnail_border",
-        "label": "t:settings.border_style",
+        "label": "t:settings.style",
         "options": [
           {
             "value": "none",
@@ -1731,6 +1974,673 @@
         "step": 1,
         "unit": "px",
         "default": 0
+      },
+      {
+        "type": "header",
+        "content": "Cart drawer reward milestones",
+        "info": "Display only. Create the matching discounts in Shopify admin."
+      },
+      {
+        "type": "checkbox",
+        "id": "tier_enable",
+        "label": "Show reward progress bar in cart drawer",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "tier_condition",
+        "label": "Progress based on",
+        "options": [
+          {
+            "value": "quantity",
+            "label": "Item count"
+          },
+          {
+            "value": "subtotal",
+            "label": "Subtotal (before discounts)"
+          },
+          {
+            "value": "discounted",
+            "label": "Subtotal (after discounts)"
+          }
+        ],
+        "default": "subtotal"
+      },
+      {
+        "type": "select",
+        "id": "tier_applies",
+        "label": "Counts products from",
+        "options": [
+          {
+            "value": "all",
+            "label": "All products"
+          },
+          {
+            "value": "collections",
+            "label": "Selected collections"
+          },
+          {
+            "value": "products",
+            "label": "Selected products"
+          }
+        ],
+        "default": "all"
+      },
+      {
+        "type": "collection_list",
+        "id": "tier_collections",
+        "label": "Collections",
+        "info": "Used when counting products from selected collections.",
+        "limit": 25
+      },
+      {
+        "type": "product_list",
+        "id": "tier_products",
+        "label": "Products",
+        "info": "Used when counting selected products.",
+        "limit": 50
+      },
+      {
+        "type": "color",
+        "id": "tier_primary",
+        "label": "Primary color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "id": "tier_secondary",
+        "label": "Secondary color",
+        "default": "#808080"
+      },
+      {
+        "type": "checkbox",
+        "id": "tier_confetti",
+        "label": "Confetti when a tier is unlocked",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "tier_complete_text",
+        "label": "Message when all tiers are unlocked",
+        "default": "You have unlocked all rewards!"
+      },
+      {
+        "type": "header",
+        "content": "Reward tier 1",
+        "info": "Set the goal to 0 to switch this tier off."
+      },
+      {
+        "type": "number",
+        "id": "tier_1_goal",
+        "label": "Goal",
+        "info": "Follows \"Progress based on\": Item count = number of items (e.g. 2). Subtotal = amount in whole rupees (e.g. 799).",
+        "default": 799
+      },
+      {
+        "type": "select",
+        "id": "tier_1_type",
+        "label": "Reward type",
+        "info": "Sets the icon on the milestone.",
+        "options": [
+          {
+            "value": "discount",
+            "label": "Discount"
+          },
+          {
+            "value": "free_shipping",
+            "label": "Free shipping"
+          },
+          {
+            "value": "free_gift",
+            "label": "Free gift"
+          },
+          {
+            "value": "custom",
+            "label": "Other"
+          }
+        ],
+        "default": "discount"
+      },
+      {
+        "type": "text",
+        "id": "tier_1_label",
+        "label": "Reward label",
+        "default": "10% OFF"
+      },
+      {
+        "type": "text",
+        "id": "tier_1_text",
+        "label": "Message before unlocking",
+        "info": "{{goal}} is replaced by what is still needed.",
+        "default": "Add {{goal}} more to unlock 10% OFF"
+      },
+      {
+        "type": "header",
+        "content": "Reward tier 2",
+        "info": "Set the goal to 0 to switch this tier off."
+      },
+      {
+        "type": "number",
+        "id": "tier_2_goal",
+        "label": "Goal",
+        "info": "Follows \"Progress based on\": Item count = number of items (e.g. 2). Subtotal = amount in whole rupees (e.g. 799).",
+        "default": 1499
+      },
+      {
+        "type": "select",
+        "id": "tier_2_type",
+        "label": "Reward type",
+        "info": "Sets the icon on the milestone.",
+        "options": [
+          {
+            "value": "discount",
+            "label": "Discount"
+          },
+          {
+            "value": "free_shipping",
+            "label": "Free shipping"
+          },
+          {
+            "value": "free_gift",
+            "label": "Free gift"
+          },
+          {
+            "value": "custom",
+            "label": "Other"
+          }
+        ],
+        "default": "discount"
+      },
+      {
+        "type": "text",
+        "id": "tier_2_label",
+        "label": "Reward label",
+        "default": "15% OFF"
+      },
+      {
+        "type": "text",
+        "id": "tier_2_text",
+        "label": "Message before unlocking",
+        "info": "{{goal}} is replaced by what is still needed.",
+        "default": "Add {{goal}} more to unlock 15% OFF"
+      },
+      {
+        "type": "header",
+        "content": "Reward tier 3",
+        "info": "Set the goal to 0 to switch this tier off."
+      },
+      {
+        "type": "number",
+        "id": "tier_3_goal",
+        "label": "Goal",
+        "info": "Follows \"Progress based on\": Item count = number of items (e.g. 2). Subtotal = amount in whole rupees (e.g. 799).",
+        "default": 2000
+      },
+      {
+        "type": "select",
+        "id": "tier_3_type",
+        "label": "Reward type",
+        "info": "Sets the icon on the milestone.",
+        "options": [
+          {
+            "value": "discount",
+            "label": "Discount"
+          },
+          {
+            "value": "free_shipping",
+            "label": "Free shipping"
+          },
+          {
+            "value": "free_gift",
+            "label": "Free gift"
+          },
+          {
+            "value": "custom",
+            "label": "Other"
+          }
+        ],
+        "default": "discount"
+      },
+      {
+        "type": "text",
+        "id": "tier_3_label",
+        "label": "Reward label",
+        "default": "25% OFF"
+      },
+      {
+        "type": "text",
+        "id": "tier_3_text",
+        "label": "Message before unlocking",
+        "info": "{{goal}} is replaced by what is still needed.",
+        "default": "Add {{goal}} more to unlock 25% OFF"
+      }
+    ]
+  },
+  {
+    "name": "NESOVI Cart Upsell",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "nesovi_upsell_enable",
+        "label": "Show upsell in cart drawer",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "nesovi_upsell_heading",
+        "label": "Heading",
+        "default": "🎁 Complete Your Look"
+      },
+      {
+        "type": "select",
+        "id": "nesovi_upsell_source",
+        "label": "Product source",
+        "options": [
+          {
+            "value": "auto",
+            "label": "Automatic (Shopify recommendations)"
+          },
+          {
+            "value": "products",
+            "label": "Manual — specific products"
+          },
+          {
+            "value": "collections",
+            "label": "Manual — specific collections"
+          }
+        ],
+        "default": "auto"
+      },
+      {
+        "type": "product_list",
+        "id": "nesovi_upsell_products",
+        "label": "Products",
+        "info": "Used when product source is set to \"Manual — specific products\".",
+        "limit": 20
+      },
+      {
+        "type": "collection_list",
+        "id": "nesovi_upsell_collections",
+        "label": "Collections",
+        "info": "Used when product source is set to \"Manual — specific collections\". Products are pulled from all selected collections.",
+        "limit": 10
+      },
+      {
+        "type": "range",
+        "id": "nesovi_upsell_limit",
+        "label": "Max products to show",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "default": 3
+      }
+    ]
+  },
+  {
+    "name": "Cart offer slider",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Rotating offer bar at the bottom of the cart drawer. Leave a message empty to skip it."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_offer_enable",
+        "label": "Show offer slider",
+        "default": true
+      },
+      {
+        "type": "inline_richtext",
+        "id": "cart_offer_1",
+        "label": "Message 1",
+        "default": "EXTRA 10% OFF ON PREPAID"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "cart_offer_2",
+        "label": "Message 2"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "cart_offer_3",
+        "label": "Message 3"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "cart_offer_4",
+        "label": "Message 4"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "cart_offer_5",
+        "label": "Message 5"
+      },
+      {
+        "type": "range",
+        "id": "cart_offer_interval",
+        "label": "Change every",
+        "min": 2,
+        "max": 10,
+        "step": 1,
+        "unit": "s",
+        "default": 3
+      },
+      {
+        "type": "select",
+        "id": "cart_offer_animation",
+        "label": "Animation",
+        "options": [
+          { "value": "slide", "label": "Slide up" },
+          { "value": "fade", "label": "Fade" }
+        ],
+        "default": "slide"
+      },
+      {
+        "type": "color",
+        "id": "cart_offer_bg",
+        "label": "Background",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "id": "cart_offer_color",
+        "label": "Text",
+        "default": "#ffffff"
+      }
+    ]
+  },
+  {
+    "name": "Urgency sale timer",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "sale_timer_enable",
+        "label": "Enable urgency timer",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Where to show"
+      },
+      {
+        "type": "checkbox",
+        "id": "sale_timer_announcement",
+        "label": "Show in announcement bar",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "sale_timer_cart",
+        "label": "Show in cart drawer",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Schedule"
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_start_date",
+        "label": "Sale start date (optional)",
+        "placeholder": "YYYY-MM-DD",
+        "info": "Timer stays hidden before this. Leave empty to start immediately."
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_start_time",
+        "label": "Sale start time",
+        "default": "00:00",
+        "info": "24-hour format HH:MM, in the store's time zone."
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_end_date",
+        "label": "Sale end date",
+        "placeholder": "YYYY-MM-DD",
+        "info": "e.g. 2026-11-30. The timer is hidden if this is empty."
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_end_time",
+        "label": "Sale end time",
+        "default": "23:59",
+        "info": "24-hour format HH:MM, in the store's time zone."
+      },
+      {
+        "type": "select",
+        "id": "sale_timer_on_expire",
+        "label": "Timer behaviour",
+        "options": [
+          {
+            "value": "repeat",
+            "label": "Repeat the countdown until the sale ends"
+          },
+          {
+            "value": "hide",
+            "label": "Count to the end date, then hide"
+          },
+          {
+            "value": "message",
+            "label": "Count to the end date, then show a message"
+          }
+        ],
+        "default": "repeat"
+      },
+      {
+        "type": "range",
+        "id": "sale_timer_cycle",
+        "label": "Countdown length",
+        "min": 1,
+        "max": 48,
+        "step": 1,
+        "default": 24,
+        "visible_if": "{{ settings.sale_timer_on_expire == 'repeat' }}"
+      },
+      {
+        "type": "select",
+        "id": "sale_timer_cycle_unit",
+        "label": "Countdown unit",
+        "options": [
+          {
+            "value": "hours",
+            "label": "Hours"
+          },
+          {
+            "value": "days",
+            "label": "Days"
+          }
+        ],
+        "default": "hours",
+        "visible_if": "{{ settings.sale_timer_on_expire == 'repeat' }}"
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_expired_message",
+        "label": "Message",
+        "default": "This sale has ended. Check back soon!",
+        "visible_if": "{{ settings.sale_timer_on_expire == 'message' }}"
+      },
+      {
+        "type": "header",
+        "content": "Text"
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_announcement_text",
+        "label": "Announcement bar text",
+        "default": "⚡ Sale ends in"
+      },
+      {
+        "type": "text",
+        "id": "sale_timer_cart_text",
+        "label": "Cart drawer text",
+        "default": "Hurry! Offer ends in"
+      },
+      {
+        "type": "header",
+        "content": "Colors"
+      },
+      {
+        "type": "color",
+        "id": "sale_timer_bg",
+        "label": "Background",
+        "default": "#4c0f2e"
+      },
+      {
+        "type": "color",
+        "id": "sale_timer_text",
+        "label": "Text",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "sale_timer_box_bg",
+        "label": "Timer box background",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "sale_timer_box_text",
+        "label": "Timer box text",
+        "default": "#4c0f2e"
+      }
+    ]
+  },
+  {
+    "name": "Offer ribbons",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Ribbons on product cards and the product page image. An offer shows when its ribbon text is set."
+      },
+      {
+        "type": "checkbox",
+        "id": "offer_ribbons_enable",
+        "label": "Show offer ribbons",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "offer_ribbon_speed",
+        "label": "Seconds per ribbon when rotating",
+        "min": 2,
+        "max": 8,
+        "step": 1,
+        "unit": "s",
+        "default": 3
+      },
+      {
+        "type": "header",
+        "content": "Offer 1"
+      },
+      {
+        "type": "text",
+        "id": "offer_1_label",
+        "label": "Ribbon text",
+        "info": "Leave empty to turn this offer off.",
+        "default": "Buy 1 Get 1"
+      },
+      {
+        "type": "text",
+        "id": "offer_1_tag",
+        "label": "Only on products tagged (optional)",
+        "info": "Leave empty to show on every product. Matches the product tag, not case-sensitive."
+      },
+      {
+        "type": "color",
+        "id": "offer_1_bg",
+        "label": "Ribbon color",
+        "default": "#8f1d2c"
+      },
+      {
+        "type": "color",
+        "id": "offer_1_text",
+        "label": "Text color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "header",
+        "content": "Offer 2"
+      },
+      {
+        "type": "text",
+        "id": "offer_2_label",
+        "label": "Ribbon text",
+        "info": "Leave empty to turn this offer off."
+      },
+      {
+        "type": "text",
+        "id": "offer_2_tag",
+        "label": "Only on products tagged (optional)",
+        "info": "Leave empty to show on every product. Matches the product tag, not case-sensitive."
+      },
+      {
+        "type": "color",
+        "id": "offer_2_bg",
+        "label": "Ribbon color",
+        "default": "#000000"
+      },
+      {
+        "type": "color",
+        "id": "offer_2_text",
+        "label": "Text color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "header",
+        "content": "Offer 3"
+      },
+      {
+        "type": "text",
+        "id": "offer_3_label",
+        "label": "Ribbon text",
+        "info": "Leave empty to turn this offer off."
+      },
+      {
+        "type": "text",
+        "id": "offer_3_tag",
+        "label": "Only on products tagged (optional)",
+        "info": "Leave empty to show on every product. Matches the product tag, not case-sensitive."
+      },
+      {
+        "type": "color",
+        "id": "offer_3_bg",
+        "label": "Ribbon color",
+        "default": "#2b463c"
+      },
+      {
+        "type": "color",
+        "id": "offer_3_text",
+        "label": "Text color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "header",
+        "content": "Offer 4"
+      },
+      {
+        "type": "text",
+        "id": "offer_4_label",
+        "label": "Ribbon text",
+        "info": "Leave empty to turn this offer off."
+      },
+      {
+        "type": "text",
+        "id": "offer_4_tag",
+        "label": "Only on products tagged (optional)",
+        "info": "Leave empty to show on every product. Matches the product tag, not case-sensitive."
+      },
+      {
+        "type": "color",
+        "id": "offer_4_bg",
+        "label": "Ribbon color",
+        "default": "#d4af37"
+      },
+      {
+        "type": "color",
+        "id": "offer_4_text",
+        "label": "Text color",
+        "default": "#ffffff"
       }
     ]
   },
@@ -1738,23 +2648,54 @@
     "name": "t:names.drawers",
     "settings": [
       {
-        "type": "color",
-        "id": "drawer_background_color",
-        "label": "t:settings.background_color",
-        "default": "{{ settings.color_palette.background }}"
+        "type": "color_scheme",
+        "id": "drawer_color_scheme",
+        "label": "t:settings.color_scheme",
+        "default": "scheme-1"
       },
       {
-        "type": "color",
-        "id": "drawer_text_color",
-        "label": "t:settings.text_color",
-        "default": "{{ settings.color_palette.foreground }}"
+        "type": "select",
+        "id": "drawer_border",
+        "label": "t:settings.borders",
+        "options": [
+          {
+            "value": "none",
+            "label": "t:options.none"
+          },
+          {
+            "value": "solid",
+            "label": "t:options.solid"
+          }
+        ],
+        "default": "none"
       },
       {
-        "type": "color",
-        "id": "drawer_border_color",
-        "label": "t:settings.border_color",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
+        "type": "range",
+        "id": "drawer_border_width",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "unit": "px",
+        "label": "t:settings.border_width",
+        "default": 1,
+        "visible_if": "{{ settings.drawer_border != 'none' }}"
+      },
+      {
+        "type": "range",
+        "id": "drawer_border_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "label": "t:settings.border_opacity",
+        "default": 50,
+        "visible_if": "{{ settings.drawer_border != 'none' }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "drawer_drop_shadow",
+        "label": "t:settings.drop_shadow",
+        "default": false
       }
     ]
   },
@@ -1786,24 +2727,6 @@
   {
     "name": "t:names.input_fields",
     "settings": [
-      {
-        "type": "color",
-        "id": "palette_input_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.background }}"
-      },
-      {
-        "type": "color",
-        "id": "palette_input_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.foreground }}"
-      },
-      {
-        "type": "color",
-        "id": "palette_input_border",
-        "label": "t:settings.borders",
-        "default": "{{ settings.color_palette.foreground }}"
-      },
       {
         "type": "range",
         "id": "input_border_width",
@@ -1870,16 +2793,10 @@
     "name": "t:names.popovers_and_modals",
     "settings": [
       {
-        "type": "color",
-        "id": "popover_background_color",
-        "label": "t:settings.background_color",
-        "default": "{{ settings.color_palette.background }}"
-      },
-      {
-        "type": "color",
-        "id": "popover_text_color",
-        "label": "t:settings.text_color",
-        "default": "{{ settings.color_palette.foreground }}"
+        "type": "color_scheme",
+        "id": "popover_color_scheme",
+        "label": "t:settings.color_scheme",
+        "default": "scheme-1"
       },
       {
         "type": "range",
@@ -1892,11 +2809,20 @@
         "default": 8
       },
       {
-        "type": "color",
-        "id": "popover_border_color",
-        "label": "t:settings.border_color",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
+        "type": "select",
+        "id": "popover_border",
+        "label": "t:settings.borders",
+        "options": [
+          {
+            "value": "none",
+            "label": "t:options.none"
+          },
+          {
+            "value": "solid",
+            "label": "t:options.solid"
+          }
+        ],
+        "default": "solid"
       },
       {
         "type": "range",
@@ -1906,21 +2832,25 @@
         "step": 1,
         "unit": "px",
         "label": "t:settings.border_width",
-        "default": 0
+        "default": 1,
+        "visible_if": "{{ settings.popover_border != 'none' }}"
+      },
+      {
+        "type": "range",
+        "id": "popover_border_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%",
+        "label": "t:settings.border_opacity",
+        "default": 50,
+        "visible_if": "{{ settings.popover_border != 'none' }}"
       },
       {
         "type": "checkbox",
         "id": "popover_drop_shadow",
         "label": "t:settings.drop_shadow",
         "default": true
-      },
-      {
-        "type": "color",
-        "id": "popover_shadow_color",
-        "label": "t:settings.shadow_color",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true,
-        "visible_if": "{{ settings.popover_drop_shadow == true }}"
       }
     ]
   },
@@ -1974,17 +2904,10 @@
         "visible_if": "{{ settings.quick_add == true }}"
       },
       {
-        "type": "color",
-        "id": "quick_add_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.background }}",
-        "visible_if": "{{ settings.quick_add == true }}"
-      },
-      {
-        "type": "color",
-        "id": "quick_add_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.foreground }}",
+        "type": "color_scheme",
+        "id": "quick_add_color_scheme",
+        "label": "t:settings.quick_add_colors",
+        "default": "scheme-1",
         "visible_if": "{{ settings.quick_add == true }}"
       },
       {
@@ -2143,52 +3066,6 @@
         "content": "t:content.variant_settings"
       },
       {
-        "type": "color",
-        "id": "palette_variant_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.background }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_variant_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_variant_border",
-        "label": "t:settings.borders",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
-        "type": "header",
-        "content": "t:names.selected_variants"
-      },
-      {
-        "type": "color",
-        "id": "palette_selected_variant_background",
-        "label": "t:settings.background",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_selected_variant_text",
-        "label": "t:settings.text",
-        "default": "{{ settings.color_palette.background }}",
-        "alpha": true
-      },
-      {
-        "type": "color",
-        "id": "palette_selected_variant_border",
-        "label": "t:settings.borders",
-        "default": "{{ settings.color_palette.foreground }}",
-        "alpha": true
-      },
-      {
         "type": "header",
         "content": "t:content.buttons"
       },
@@ -2227,6 +3104,35 @@
           }
         ],
         "default": "equal-width-buttons"
+      }
+    ]
+  },
+  {
+    "name": "Add to cart banner",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_prepaid_discount_banner",
+        "label": "Show discount banner above the Add to cart button",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "prepaid_discount_banner_text",
+        "label": "Discount banner text",
+        "default": "Additional ₹30 Off on prepaid orders."
+      },
+      {
+        "type": "color",
+        "id": "prepaid_discount_banner_color",
+        "label": "Discount banner background color",
+        "default": "#1e9e4e"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_price_in_add_to_cart_button",
+        "label": "Show price inside the Add to cart button",
+        "default": true
       }
     ]
   }

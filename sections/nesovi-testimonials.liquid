@@ -1,0 +1,231 @@
+<section class="nesovi-testi">
+  {%- if section.settings.eyebrow != blank -%}
+    <span class="nesovi-testi-eyebrow">{{ section.settings.eyebrow }}</span>
+  {%- endif -%}
+  {%- if section.settings.heading != blank -%}
+    <h2>{{ section.settings.heading }}</h2>
+  {%- endif -%}
+  {%- if section.settings.subheading != blank -%}
+    <p class="nesovi-testi-sub">{{ section.settings.subheading }}</p>
+  {%- endif -%}
+
+  <div class="nesovi-testi-track" role="list">
+    {%- for block in section.blocks -%}
+      <div class="nesovi-testi-card" role="listitem" {{ block.shopify_attributes }}>
+        <div class="nesovi-testi-thumb">
+          {%- if block.settings.image != blank -%}
+            {{
+              block.settings.image
+              | image_url: width: 160
+              | image_tag: loading: 'lazy', widths: '80, 120, 160', sizes: '56px', alt: block.settings.product_name | default: 'Product'
+            }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'nesovi-testi-thumb-ph' }}
+          {%- endif -%}
+        </div>
+
+        <div class="nesovi-testi-stars" aria-label="{{ block.settings.rating }} out of 5 stars">
+          {%- for i in (1..5) -%}
+            <span class="nesovi-testi-star{% if i <= block.settings.rating %} is-filled{% endif %}">★</span>
+          {%- endfor -%}
+        </div>
+
+        {%- if block.settings.quote != blank -%}
+          <p class="nesovi-testi-quote">&ldquo;{{ block.settings.quote }}&rdquo;</p>
+        {%- endif -%}
+
+        <div class="nesovi-testi-meta">
+          {%- if block.settings.author != blank -%}
+            <span class="nesovi-testi-author">{{ block.settings.author }}</span>
+          {%- endif -%}
+          {%- if block.settings.verified -%}
+            <span class="nesovi-testi-badge">
+              <svg width="11" height="11" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="11" cy="11" r="11" fill="currentColor"/>
+                <path d="M6.5 11.3L9.3 14L15.5 7.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Verified Buyer
+            </span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+<style>
+  .nesovi-testi{
+    --gold: #c9a66b;
+    --gold-soft: #f4ead9;
+    background:#fff;
+    padding:48px 0 40px;
+    text-align:center;
+  }
+  .nesovi-testi-eyebrow{
+    display:inline-block;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:10px;
+  }
+  .nesovi-testi h2{
+    font-size:26px;
+    font-weight:600;
+    text-transform:capitalize;
+    margin:0 0 8px;
+    color:#1a1a1a;
+  }
+  .nesovi-testi-sub{
+    font-size:14px;
+    color:#666;
+    margin:0 0 32px;
+  }
+
+  .nesovi-testi-track{
+    display:flex;
+    gap:16px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding:4px 20px 8px;
+  }
+  .nesovi-testi-track::-webkit-scrollbar{ display:none; }
+
+  .nesovi-testi-card{
+    scroll-snap-align:start;
+    flex:0 0 80%;
+    max-width:300px;
+    background:#fff;
+    border:1px solid var(--gold-soft);
+    border-radius:18px;
+    box-shadow:0 10px 28px rgba(201,166,107,.14);
+    padding:24px 20px;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .nesovi-testi-thumb{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    overflow:hidden;
+    background:var(--gold-soft);
+    flex-shrink:0;
+  }
+  .nesovi-testi-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .nesovi-testi-thumb-ph{
+    width:100%;
+    height:100%;
+    opacity:.4;
+  }
+
+  .nesovi-testi-stars{ line-height:1; }
+  .nesovi-testi-star{
+    font-size:16px;
+    color:#e4dccb;
+  }
+  .nesovi-testi-star.is-filled{ color:var(--gold); }
+
+  .nesovi-testi-quote{
+    font-size:14px;
+    line-height:1.6;
+    color:#3a3a3a;
+    margin:0;
+    flex:1;
+  }
+
+  .nesovi-testi-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .nesovi-testi-author{
+    font-size:13px;
+    font-weight:600;
+    color:#1a1a1a;
+  }
+  .nesovi-testi-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:11px;
+    font-weight:600;
+    color:var(--gold);
+    background:var(--gold-soft);
+    border-radius:20px;
+    padding:4px 10px;
+  }
+
+  @media (min-width: 750px) {
+    .nesovi-testi-track{
+      max-width:1100px;
+      margin:0 auto;
+      padding:4px 24px 12px;
+    }
+    .nesovi-testi-card{
+      flex:0 0 320px;
+      max-width:320px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "NESOVI Testimonials",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Customer Love" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What Our Customers Say" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Real reviews from real NESOVI customers." }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Product thumbnail" },
+        { "type": "text", "id": "product_name", "label": "Product name (for image alt text)" },
+        { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "quote", "label": "Testimonial text" },
+        { "type": "text", "id": "author", "label": "Customer name (optional)" },
+        { "type": "checkbox", "id": "verified", "label": "Show \"Verified Buyer\" badge", "default": true }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "NESOVI Testimonials",
+      "blocks": {
+        "t1": { "type": "testimonial", "settings": { "rating": 5, "quote": "I honestly wasn't expecting the quality to be this good at this price. The finish looks premium and I've received so many compliments. Will definitely order again!" } },
+        "t2": { "type": "testimonial", "settings": { "rating": 5, "quote": "The jewellery is lightweight, elegant, and looks exactly like the pictures. Perfect for daily wear as well as special occasions." } },
+        "t3": { "type": "testimonial", "settings": { "rating": 5, "quote": "I bought a necklace set for my sister and she absolutely loved it. Beautiful packaging and quick delivery. Highly recommended!" } },
+        "t4": { "type": "testimonial", "settings": { "rating": 5, "quote": "I've worn my earrings several times and they still look brand new. Great quality and very comfortable to wear all day." } },
+        "t5": { "type": "testimonial", "settings": { "rating": 5, "quote": "The designs are trendy and classy. It's difficult to find such premium-looking jewellery at this price point. Nesovi exceeded my expectations." } },
+        "t6": { "type": "testimonial", "settings": { "rating": 5, "quote": "I ordered multiple pieces and every product looked stunning. The craftsmanship is impressive and the finishing is excellent." } },
+        "t7": { "type": "testimonial", "settings": { "rating": 5, "quote": "My order arrived before the expected date. The jewellery looked even better in person. Worth every rupee!" } },
+        "t8": { "type": "testimonial", "settings": { "rating": 5, "quote": "I was looking for elegant jewellery for a wedding function and Nesovi delivered exactly what I wanted. Everyone asked where I bought it from." } },
+        "t9": { "type": "testimonial", "settings": { "rating": 5, "quote": "Excellent customer support and beautiful products. They helped me with my order quickly and the jewellery quality is amazing." } },
+        "t10": { "type": "testimonial", "settings": { "rating": 5, "quote": "The adjustable ring fits perfectly and the shine is beautiful. It gives a luxury feel without spending a fortune." } },
+        "t11": { "type": "testimonial", "settings": { "rating": 5, "quote": "I've tried many online jewellery brands, but Nesovi stands out for its quality, affordable pricing, and stylish designs. Will definitely shop again." } },
+        "t12": { "type": "testimonial", "settings": { "rating": 5, "quote": "The anti-tarnish collection is fantastic. I've been wearing it regularly and it still looks gorgeous. Highly satisfied with my purchase." } },
+        "t13": { "type": "testimonial", "settings": { "rating": 5, "quote": "The gift box packaging made it perfect for gifting. My friend thought it was from a luxury jewellery brand!" } },
+        "t14": { "type": "testimonial", "settings": { "rating": 5, "quote": "Beautiful craftsmanship, premium finish, and exactly as shown on the website. One of the best online jewellery purchases I've made." } },
+        "t15": { "type": "testimonial", "settings": { "rating": 5, "quote": "I was hesitant to order online, but Nesovi completely changed my perception. Great quality, fast shipping, and excellent value for money." } }
+      },
+      "block_order": ["t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","t11","t12","t13","t14","t15"]
+    }
+  ]
+}
+{% endschema %}

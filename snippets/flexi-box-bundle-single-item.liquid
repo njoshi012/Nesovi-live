@@ -1,0 +1,105 @@
+{% comment %}Flexi Box Bundle (single page) Item Liquid code{% endcomment %}
+{% comment %}
+{%- render 'flexi-box-bundle-single-item',
+  product_flexi: product_flexi,
+  variant: variant,
+  cats: cats,
+  item_index: item_index
+-%}
+
+`cats` is a space separated list of filter indexes this product belongs to,
+e.g. "1 3" when the product sits in both the 1st and 3rd bundle collection.
+{% endcomment %}
+
+{%- liquid
+  assign is_available = false
+  if variant.available and variant.inventory_quantity > 0
+    assign is_available = true
+  endif
+
+  assign card_title = product_flexi.title
+  unless product_flexi.has_only_default_variant
+    assign card_title = product_flexi.title | append: ' - ' | append: variant.title
+  endunless
+-%}
+
+{% capture property %}{{ product_flexi.title }}{% unless product_flexi.has_only_default_variant %} - {{ variant.title }}{% endunless %}/{{ variant.sku }}/{{ variant.id }}{% endcapture %}
+
+<li
+  id="fbs-{{ variant.id }}"
+  class="fbs-card{% unless is_available %} fbs-card--soldout{% endunless %}"
+  data-cats="{{ cats }}"
+  data-variant-id="{{ variant.id }}"
+>
+  <div class="product-info fbs-card__inner">
+    <div
+      class="flexi-popup-trigger fbs-card__media"
+      data-title="{{ card_title | escape }}"
+      data-image="{{ product_flexi.featured_image | image_url: width: 300 }}"
+      data-description="{{ product_flexi.description | escape }}"
+      data-price="{{ variant.price | money }}"
+      data-compare-at-price="{{ variant.compare_at_price | money }}"
+    >
+      {%- render 'flexi-box-bundle-img-wrapper', product_flexi: product_flexi, variant: variant -%}
+    </div>
+
+    <div class="fbs-card__body">
+      <h3 class="fbs-card__title product_flexi_title">{{ card_title }}</h3>
+
+      {%- if product_flexi.metafields.custom.subtitle.value != blank -%}
+        <p class="fbs-card__subtitle">{{ product_flexi.metafields.custom.subtitle.value }}</p>
+      {%- else -%}
+        <p class="fbs-card__subtitle">{{ product_flexi.description | strip_html | truncate: 60 }}</p>
+      {%- endif -%}
+
+      {%- unless product_flexi.has_only_default_variant -%}
+        <span class="fbs-card__variant">{{ variant.title }}</span>
+      {%- endunless -%}
+
+      <div class="fbs-card__foot">
+        <div class="fbs-card__prices">
+          <span class="fbs-card__price">{{ variant.price | money_without_trailing_zeros }}</span>
+          {%- if variant.compare_at_price > variant.price -%}
+            <s class="fbs-card__compare">{{ variant.compare_at_price | money_without_trailing_zeros }}</s>
+          {%- endif -%}
+        </div>
+
+        {%- if is_available -%}
+          <label class="fbs-toggle" aria-label="Add {{ card_title | escape }} to your box">
+            <input type="hidden" autocomplete="off" name="properties[_ITEM{{ item_index }}]" value="No">
+            <input
+              type="checkbox"
+              class="fbs-toggle__input"
+              id="fbs-cb-{{ variant.id }}"
+              autocomplete="off"
+              name="properties[_ITEM{{ item_index }}]"
+              value="{{ property }}"
+              data-sku="{{ variant.sku }}"
+              data-price="{{ variant.price }}"
+              data-title="{{ card_title | escape }}"
+              {% comment %}
+                The box list shows the product name and the variant on separate
+                lines, so both are exposed independently of the combined title
+                used by the toast and the tray slot tooltip.
+              {% endcomment %}
+              data-product-title="{{ product_flexi.title | escape }}"
+              data-variant="{% unless product_flexi.has_only_default_variant %}{{ variant.title | escape }}{% endunless %}"
+              {% comment %} 200px covers the 52px box list thumb at 3x DPR {% endcomment %}
+              data-thumb="{{ product_flexi.featured_image | image_url: width: 200 }}"
+            >
+            <span class="fbs-toggle__box" aria-hidden="true">
+              <svg class="fbs-toggle__plus" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <svg class="fbs-toggle__check" xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 11 9" fill="none">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M9.66802 1.37429L4.48642 7.85309L0.416016 4.46069L1.18402 3.53909L4.31362 6.14669L8.73201 0.625488L9.66802 1.37429Z" fill="currentColor" stroke="currentColor" stroke-width="0.5"/>
+              </svg>
+            </span>
+          </label>
+        {%- else -%}
+          <span class="fbs-card__soldout">Sold Out</span>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</li>

@@ -1,0 +1,509 @@
+{% liquid
+  assign product = section.settings.product
+
+  case section.settings.layout_type
+    when 'grid'
+      assign classes = 'resource-list--grid'
+      capture styles
+        echo '--resource-list-column-gap-desktop: ' | append: section.settings.columns_gap | append: 'px;'
+        echo '--resource-list-row-gap-desktop: ' | append: section.settings.rows_gap | append: 'px;'
+        echo '--resource-list-columns: repeat(' | append: section.settings.columns | append: ', 1fr);'
+        echo '--resource-list-columns-mobile: repeat(' | append: section.settings.mobile_columns | append: ', 1fr);'
+      endcapture
+    when 'carousel'
+      assign classes = 'resource-list__carousel'
+      capture styles
+        echo '--resource-list-column-gap-desktop: ' | append: section.settings.columns_gap | append: 'px;'
+        echo '--column-count: ' | append: section.settings.columns | append: ';'
+        echo '--column-count-mobile: ' | append: section.settings.mobile_columns | append: ';'
+        echo '--mobile-card-size: ' | append: section.settings.mobile_card_size | append: ';'
+      endcapture
+  endcase
+%}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="
+    section
+    section--{{ section.settings.section_width }}
+    color-{{ section.settings.color_scheme }}
+    section-resource-list
+    spacing-style
+    gap-style
+  "
+  style="
+    --column-count-mobile: {{ section.settings.mobile_columns }};
+    {% render 'spacing-style', settings: section.settings %}
+    {% render 'gap-style', value: section.settings.gap %}
+    {{ styles }}
+  "
+>
+  {% if section.settings.heading != blank or section.settings.show_view_all %}
+    <div
+      class="section-resource-list__header nesovi-pv-header"
+      style="justify-content: {{ section.settings.horizontal_alignment }};"
+    >
+      {%- if section.settings.heading != blank -%}
+        <h3 class="nesovi-pv-heading">{{ section.settings.heading }}</h3>
+      {%- endif -%}
+      {%- if section.settings.show_view_all and product != blank -%}
+        <a href="{{ product.url }}" class="nesovi-pv-viewall">{{ section.settings.view_all_label | default: 'View product' }}</a>
+      {%- endif -%}
+    </div>
+  {% endif %}
+
+  {% capture list_items %}
+    {% if product != blank %}
+      {% for variant in product.variants %}
+        {% liquid
+          assign v_image = variant.featured_image | default: product.featured_image
+          assign v_title = product.title
+          unless variant.title == 'Default Title'
+            assign v_title = product.title | append: ' - ' | append: variant.title
+          endunless
+          assign rating = product.metafields.reviews.rating.value
+        %}
+        <div class="resource-list__item">
+          <div class="nesovi-pv-card" data-variant-id="{{ variant.id }}">
+            <div class="nesovi-pv-img">
+              <a href="{{ product.url }}?variant={{ variant.id }}" tabindex="-1" aria-label="{{ v_title | escape }}">
+                {%- if v_image != blank -%}
+                  <img
+                    src="{{ v_image | image_url: width: 520 }}"
+                    srcset="{{ v_image | image_url: width: 360 }} 360w, {{ v_image | image_url: width: 520 }} 520w, {{ v_image | image_url: width: 720 }} 720w"
+                    sizes="(max-width: 768px) 50vw, 280px"
+                    alt="{{ v_image.alt | default: v_title | escape }}"
+                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                    width="520" height="650">
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'nesovi-pv-placeholder' }}
+                {%- endif -%}
+              </a>
+              {% if rating and rating.rating > 0 %}
+                <span class="nesovi-pv-rating" aria-label="Rated {{ rating.rating }} out of 5">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M6 .8l1.6 3.3 3.6.5-2.6 2.5.6 3.6L6 9.5 2.8 11.3l.6-3.6L.8 4.6l3.6-.5z"/></svg>
+                  {{ rating.rating | round: 1 }}
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="nesovi-pv-info">
+              <a href="{{ product.url }}?variant={{ variant.id }}" class="nesovi-pv-title">{{ v_title }}</a>
+
+              <div class="nesovi-pv-pricing">
+                <span class="nesovi-pv-price">{{ variant.price | money }}</span>
+                {% if variant.compare_at_price > variant.price %}
+                  {% assign saving = variant.compare_at_price | minus: variant.price | times: 100 | divided_by: variant.compare_at_price %}
+                  <span class="nesovi-pv-price-sub">
+                    <span class="nesovi-pv-compare">{{ variant.compare_at_price | money }}</span>
+                    <span class="nesovi-pv-off">({{ saving }}% Off)</span>
+                  </span>
+                {% endif %}
+              </div>
+
+              {% if variant.available %}
+                <button class="nesovi-pv-atc" data-variant="{{ variant.id }}" aria-label="Add {{ v_title | escape }} to cart">
+                  <span class="nesovi-pv-atc-label">Add To Cart</span>
+                  <span class="nesovi-pv-atc-loading" aria-hidden="true">
+                    <svg class="nesovi-pv-spin" width="15" height="15" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="2" stroke-dasharray="22" stroke-dashoffset="8" fill="none"/></svg>
+                  </span>
+                  <span class="nesovi-pv-atc-done" aria-hidden="true">✓ Added</span>
+                </button>
+              {% else %}
+                <button class="nesovi-pv-atc nesovi-pv-atc--soldout" disabled>Sold Out</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% unless forloop.last %}
+          <!--@list/split-->
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
+  {% endcapture %}
+
+  {% liquid
+    assign list_items_array = list_items | strip | split: '<!--@list/split-->'
+  %}
+
+  <div
+    class="
+      resource-list
+      {% if section.settings.layout_type == 'carousel' %}
+        force-full-width
+      {% endif %}
+      {% if section.settings.carousel_on_mobile and section.settings.layout_type != 'carousel' %}
+        hidden--mobile
+      {% endif %}
+      {{ classes }}
+    "
+    style="{{ styles }}"
+  >
+    {% case section.settings.layout_type %}
+      {% when 'grid' %}
+        {{ list_items }}
+      {% when 'carousel' %}
+        {% render 'resource-list-carousel',
+          ref: 'resourceListCarousel',
+          slides: list_items_array,
+          slide_count: product.variants.size,
+          settings: section.settings
+        %}
+    {% endcase %}
+  </div>
+
+  {% if section.settings.carousel_on_mobile and section.settings.layout_type != 'carousel' %}
+    <div
+      class="resource-list hidden--desktop force-full-width"
+      style="
+        --resource-list-column-gap-desktop: {{ section.settings.columns_gap }}px;
+        --column-count: {{ section.settings.columns }};
+        --mobile-card-size: {{ section.settings.mobile_card_size }};
+      "
+    >
+      {% render 'resource-list-carousel',
+        ref: 'resourceListCarouselMobile',
+        slides: list_items_array,
+        slide_count: product.variants.size,
+        settings: section.settings
+      %}
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .nesovi-pv-header{display:flex;align-items:flex-end;gap:12px;margin-bottom:16px}
+  .nesovi-pv-heading{font-size:1.25rem;font-weight:600;margin:0}
+  .nesovi-pv-viewall{font-size:13px;text-decoration:underline;color:inherit;margin-inline-start:auto}
+
+  .nesovi-pv-card{border:1px solid #ececec;border-radius:10px;overflow:hidden;color:inherit;background:#fff;height:100%;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s}
+  .nesovi-pv-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.10)}
+
+  .nesovi-pv-img{position:relative;aspect-ratio:4/5;background:#f6f4f2;overflow:hidden}
+  .nesovi-pv-img img{width:100%;height:100%;object-fit:cover;display:block}
+  .nesovi-pv-placeholder{width:100%;height:100%;opacity:.4}
+
+  .nesovi-pv-rating{position:absolute;bottom:8px;left:8px;background:#fff;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;color:#333;display:flex;align-items:center;gap:3px;box-shadow:0 1px 4px rgba(0,0,0,.16)}
+  .nesovi-pv-rating svg{color:#f5a623}
+
+  .nesovi-pv-info{padding:11px 12px 12px;display:flex;flex-direction:column;flex:1}
+  .nesovi-pv-title{font-size:13.5px;font-weight:500;color:#1a1a1a;text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;min-height:37px;margin-bottom:8px}
+  .nesovi-pv-title:hover{color:#8B4A32}
+  .nesovi-pv-pricing{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+  .nesovi-pv-price{font-size:14px;font-weight:700;color:#1a1a1a}
+  .nesovi-pv-price-sub{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden}
+  .nesovi-pv-compare{font-size:12px;color:#777;text-decoration:line-through;white-space:nowrap}
+  .nesovi-pv-off{color:#1f9d55;font-size:12px;font-weight:600;white-space:nowrap}
+
+  .nesovi-pv-atc{width:100%;height:36px;padding:0 10px;border-radius:6px;border:none;background:#4C0F2E;color:#fff;font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer;position:relative;overflow:hidden;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;margin-top:auto}
+  .nesovi-pv-atc:hover:not(:disabled){background:#6E1B42}
+  .nesovi-pv-atc--soldout{background:#eee;color:#999;cursor:not-allowed}
+  .nesovi-pv-atc-label{transition:opacity .15s}
+  .nesovi-pv-atc-loading,.nesovi-pv-atc-done{position:absolute;opacity:0;transition:opacity .15s;pointer-events:none}
+  .nesovi-pv-atc.is-loading .nesovi-pv-atc-label{opacity:0}
+  .nesovi-pv-atc.is-loading .nesovi-pv-atc-loading{opacity:1}
+  .nesovi-pv-atc.is-added{background:#1f9d55}
+  .nesovi-pv-atc.is-added .nesovi-pv-atc-label{opacity:0}
+  .nesovi-pv-atc.is-added .nesovi-pv-atc-done{opacity:1}
+  @keyframes nesovi-pv-spin{to{transform:rotate(360deg)}}
+  .nesovi-pv-spin{animation:nesovi-pv-spin .7s linear infinite}
+</style>
+
+<script>
+(function(){
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.nesovi-pv-atc:not(:disabled):not(.is-loading):not(.is-added)');
+    if(!btn) return;
+    var variantId = btn.dataset.variant;
+    if(!variantId) return;
+
+    btn.classList.add('is-loading');
+    btn.disabled = true;
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ id: parseInt(variantId, 10), quantity: 1 })
+    })
+    .then(function(r){ if(!r.ok) throw new Error('fail'); return r.json(); })
+    .then(function(){
+      btn.classList.remove('is-loading');
+      btn.classList.add('is-added');
+
+      fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+        document.dispatchEvent(new CustomEvent('cart:update', {
+          bubbles: true,
+          detail: {
+            resource: cart,
+            sourceId: variantId,
+            data: {
+              didError: false,
+              source: 'nesovi-product-variants',
+              itemCount: cart.item_count,
+              variantId: variantId
+            }
+          }
+        }));
+      }).catch(function(){});
+
+      setTimeout(function(){
+        btn.classList.remove('is-added');
+        btn.disabled = false;
+      }, 2500);
+    })
+    .catch(function(){
+      btn.classList.remove('is-loading');
+      btn.disabled = false;
+      alert('Could not add to cart. Please try again.');
+    });
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "NESOVI Product Variants",
+  "class": "section-resource-list",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Every variant of this product is shown as its own tile in the grid. If the product has no real variant options, the product itself is shown as a single tile."
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show \"View product\" link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Link label",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout_type",
+      "label": "Layout type",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "carousel", "label": "Carousel" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "checkbox",
+      "id": "carousel_on_mobile",
+      "label": "Use carousel on mobile",
+      "default": false,
+      "visible_if": "{{ section.settings.layout_type != 'carousel' }}"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2",
+      "visible_if": "{{ section.settings.layout_type == 'grid' and section.settings.carousel_on_mobile == false }}"
+    },
+    {
+      "type": "select",
+      "id": "mobile_card_size",
+      "label": "Mobile card size",
+      "options": [
+        { "value": "60cqw", "label": "Large" },
+        { "value": "44cqw", "label": "Small" }
+      ],
+      "default": "60cqw",
+      "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_gap",
+      "label": "Horizontal gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "rows_gap",
+      "label": "Vertical gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24,
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "header",
+      "content": "Carousel navigation",
+      "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "select",
+      "id": "icons_style",
+      "label": "Icon",
+      "options": [
+        { "value": "arrow", "label": "Arrows" },
+        { "value": "chevron", "label": "Chevrons" },
+        { "value": "arrows_large", "label": "Large arrows" },
+        { "value": "chevron_large", "label": "Large chevrons" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "arrow",
+      "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "select",
+      "id": "icons_shape",
+      "label": "Icon background",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "circle", "label": "Circle" },
+        { "value": "square", "label": "Square" }
+      ],
+      "default": "none",
+      "visible_if": "{{ section.settings.icons_style != 'none' and section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "header",
+      "content": "Section layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Width",
+      "options": [
+        { "value": "page-width", "label": "Page" },
+        { "value": "full-width", "label": "Full width" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "select",
+      "id": "horizontal_alignment",
+      "label": "Header alignment",
+      "options": [
+        { "value": "flex-start", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "flex-end", "label": "Right" }
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "NESOVI Product Variants",
+      "category": "Products",
+      "settings": {
+        "layout_type": "grid",
+        "carousel_on_mobile": false,
+        "columns": 4,
+        "mobile_columns": "2",
+        "columns_gap": 8,
+        "rows_gap": 24,
+        "icons_style": "arrow",
+        "icons_shape": "none",
+        "section_width": "page-width",
+        "gap": 28,
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
+    },
+    {
+      "name": "NESOVI Product Variants Carousel",
+      "category": "Products",
+      "settings": {
+        "layout_type": "carousel",
+        "carousel_on_mobile": false,
+        "columns": 4,
+        "mobile_columns": "2",
+        "columns_gap": 8,
+        "rows_gap": 24,
+        "icons_style": "arrow",
+        "icons_shape": "circle",
+        "section_width": "page-width",
+        "gap": 28,
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
+    }
+  ]
+}
+{% endschema %}

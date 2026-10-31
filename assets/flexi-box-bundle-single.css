@@ -1,0 +1,1076 @@
+/*
+ * Flexi Box Bundle — single page variant.
+ * Scoped under .fbs / .fbs-tray so it cannot collide with the step-wise
+ * bundle styles in flexi-box-bundle-style.css.
+ */
+
+/* Colours come from the theme's own brand tokens (snippets/css-variables.liquid)
+   so this section follows any future palette change in theme settings. The
+   fallbacks mirror the current values in config/settings_data.json. */
+.fbs {
+  --fbs-ink: var(--COLOR-TEXT, #0b0b0b);
+  --fbs-muted: var(--COLOR-TEXT-LIGHTEN, #545454);
+  --fbs-border: var(--COLOR-BORDER, #d3d3d3);
+  --fbs-price: var(--COLOR-TEXT, #0b0b0b);
+  --fbs-sale: var(--COLOR-SALE-BG, #d02e2e);
+  --fbs-btn-bg: var(--PRIMARY-BUTTONS-COLOR-BG, #000000);
+  --fbs-btn-text: var(--PRIMARY-BUTTONS-COLOR-TEXT, #ffffff);
+  --fbs-radius: 8px;
+  /* Shared page gutter. The theme's .page-width is only 0.1rem, which leaves
+     content touching the screen edge on mobile, so this section supplies its
+     own and drops it on desktop where page-width centres things anyway. */
+  --fbs-gutter: 12px;
+  --fbs-tray-h: 92px;
+  /* Clear the floating tray plus the gap it sits in, so the last row of cards
+     is never trapped underneath it. */
+  padding-bottom: calc(var(--fbs-tray-h) + 40px);
+}
+
+.fbs-empty {
+  padding: 2rem 0;
+  color: #b00;
+}
+
+/* ------------------------------------------------------------------ head */
+
+.fbs__head {
+  padding-top: 1.25rem;
+  padding-inline: var(--fbs-gutter);
+}
+
+.fbs__note {
+  text-align: center;
+  font-size: 13px;
+  color: var(--fbs-muted);
+  margin-bottom: 1rem;
+}
+
+.fbs__heading {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 1.25rem;
+}
+
+/* ------------------------------------------------------------------ search */
+
+.fbs__search {
+  position: relative;
+  max-width: 420px;
+  margin: 0 0 1rem;
+}
+
+.fbs__search-field {
+  width: 100%;
+  padding: 10px 40px 10px 14px;
+  border: 1px solid var(--fbs-border);
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.fbs__search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: 0;
+  background: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--fbs-muted);
+  display: flex;
+}
+
+/* ------------------------------------------------------------------ filter pills */
+
+.fbs__filters {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Momentum scrolling on iOS, and keep a sideways swipe inside the pill strip
+     instead of letting it bubble up into the browser's back-navigation gesture. */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  padding-bottom: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.fbs__filters::-webkit-scrollbar {
+  display: none;
+}
+
+/* The strip's ancestors (an inline <product-form> wrapping a grid .product__form)
+   are max-content sized, so the row stretched to fit every pill — 453px inside a
+   390px viewport — leaving overflow-x nothing to scroll against. Pinning the width
+   to the viewport gives the scroll container a definite size, so the pills overflow
+   it and scroll instead of widening it. Also stops the page rocking sideways.
+
+   The negative margin cancels .fbs__head's 12px gutter so the row starts at the
+   screen edge, and the matching padding puts the first and last pill back in line
+   with the heading. A pill half-visible at the edge is the "swipe me" cue. */
+@media screen and (max-width: 749px) {
+  .fbs__filters {
+    box-sizing: border-box;
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(-1 * var(--fbs-gutter));
+    padding-inline: var(--fbs-gutter);
+  }
+}
+
+.fbs__pill {
+  flex: 0 0 auto;
+  padding: 9px 18px;
+  border: 1px solid var(--fbs-border);
+  border-radius: var(--fbs-radius);
+  background: #fff;
+  color: var(--fbs-ink);
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fbs__pill:hover {
+  border-color: #b5b5b5;
+}
+
+.fbs__pill.is-active {
+  border-color: var(--fbs-ink);
+  border-width: 2px;
+  padding: 8px 17px;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ grid */
+
+/*
+ * Two mobile layouts, picked in the theme editor. The section's `mobile_layout`
+ * setting stamps --carousel or --grid onto the list; both collapse to the same
+ * grid on desktop, where the column count comes from --fbs-cols.
+ */
+.fbs__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Make each li a flex column so the card fills the row height via flex-grow
+   rather than height:100%, which resolves to auto here. */
+.fbs__grid > .fbs-card {
+  display: flex;
+}
+
+/* Carousel — one edge-to-edge swipe row. The theme's .page-width has almost no
+   gutter, so the row already reaches the viewport edge and the next card clips
+   there, which is what signals "swipe me". */
+.fbs__grid--carousel {
+  display: flex;
+  gap: 12px;
+  /* overflow-x:auto forces overflow-y to compute to auto, so anything sitting
+     flush against the bottom edge — the card's bottom border — gets clipped.
+     The extra bottom padding gives it room. */
+  padding: 4px var(--fbs-gutter) 14px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-left: var(--fbs-gutter);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fbs__grid--carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.fbs__grid--carousel > .fbs-card {
+  flex: 0 0 44%;
+  scroll-snap-align: start;
+}
+
+/* Grid — two per row, as the step-wise bundle did. Needs the same gutter as the
+   carousel or the cards sit flush against both screen edges. */
+.fbs__grid--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 4px var(--fbs-gutter) 14px;
+}
+
+@media screen and (min-width: 750px) {
+  .fbs__grid--carousel,
+  .fbs__grid--grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    overflow: visible;
+    padding: 0;
+  }
+  .fbs__grid--carousel > .fbs-card {
+    flex: initial;
+  }
+  /* page-width centres content on desktop, so the gutter would only push the
+     header out of alignment with the grid. */
+  .fbs__head {
+    padding-inline: 0;
+  }
+  .fbs__heading {
+    font-size: 34px;
+  }
+}
+
+@media screen and (min-width: 1100px) {
+  .fbs__grid--carousel,
+  .fbs__grid--grid {
+    grid-template-columns: repeat(var(--fbs-cols, 4), minmax(0, 1fr));
+  }
+}
+
+.fbs__no-results {
+  text-align: center;
+  color: var(--fbs-muted);
+  padding: 3rem 0;
+}
+
+/* ------------------------------------------------------------------ card */
+
+.fbs-card {
+  list-style: none;
+  margin: 0;
+}
+
+.fbs-card[hidden] {
+  display: none;
+}
+
+.fbs-card__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 1px solid var(--fbs-border);
+  border-radius: var(--fbs-radius);
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fbs-card.is-selected .fbs-card__inner {
+  border-color: var(--fbs-ink);
+  box-shadow: inset 0 0 0 1px var(--fbs-ink);
+}
+
+.fbs-card.is-locked .fbs-card__inner {
+  opacity: 0.55;
+}
+
+.fbs-card--soldout .fbs-card__inner {
+  opacity: 0.6;
+}
+
+/* The reference insets the image inside the card rather than bleeding it edge
+   to edge, so the card border reads as a frame around the whole tile. */
+.fbs-card__media {
+  cursor: pointer;
+  padding: 8px 8px 0;
+}
+
+/* The shared image slider snippet ships its own layout; just tame the margin. */
+.fbs-card__media .grid-col {
+  margin-bottom: 0;
+}
+
+.fbs-card__media .slider-slide img {
+  border-radius: 6px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.fbs-card__media .slider-pagination {
+  margin: 6px 0 0;
+}
+
+.fbs-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 6px;
+  padding: 12px;
+}
+
+.fbs-card__title {
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 700;
+  margin: 0;
+}
+
+.fbs-card__subtitle {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--fbs-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fbs-card__variant {
+  align-self: flex-start;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: #f4f4f4;
+  color: #333;
+}
+
+.fbs-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.fbs-card__prices {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fbs-card__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fbs-price);
+}
+
+.fbs-card__compare {
+  font-size: 12px;
+  color: var(--fbs-sale);
+}
+
+.fbs-card__soldout {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fbs-muted);
+}
+
+/* ------------------------------------------------------------------ toggle button */
+
+.fbs-toggle {
+  margin: 0;
+  cursor: pointer;
+}
+
+.fbs-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.fbs-toggle__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--fbs-btn-bg);
+  border-radius: 6px;
+  background: var(--fbs-btn-bg);
+  color: var(--fbs-btn-text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.fbs-toggle__check {
+  display: none;
+}
+
+.fbs-toggle__input:checked ~ .fbs-toggle__box {
+  background: var(--fbs-btn-text);
+  color: var(--fbs-btn-bg);
+}
+
+.fbs-toggle__input:checked ~ .fbs-toggle__box .fbs-toggle__plus {
+  display: none;
+}
+
+.fbs-toggle__input:checked ~ .fbs-toggle__box .fbs-toggle__check {
+  display: block;
+}
+
+.fbs-toggle__input:focus-visible ~ .fbs-toggle__box {
+  outline: 2px solid #3f6ba1;
+  outline-offset: 2px;
+}
+
+.fbs-toggle__input:disabled ~ .fbs-toggle__box {
+  cursor: not-allowed;
+}
+
+@keyframes fbs-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.fbs-shake .fbs-card__inner {
+  animation: fbs-shake 0.25s ease;
+}
+
+/* ------------------------------------------------------------------ sticky tray */
+
+/* A floating card inset from the viewport edges, not a full-bleed bar — the
+   page shows through around it. */
+.fbs-tray {
+  --fbs-tray-inset: 10px;
+  position: fixed;
+  left: var(--fbs-tray-inset);
+  right: var(--fbs-tray-inset);
+  bottom: var(--fbs-tray-inset);
+  /* Above the theme's fixed page chrome (nav bar sits at 99), but well below
+     the quick-view popup overlay at 9980 so that still covers the tray. */
+  z-index: 100;
+  background: #fff;
+  border: 1px solid var(--fbs-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+}
+
+@media screen and (min-width: 750px) {
+  .fbs-tray {
+    --fbs-tray-inset: 16px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 1100px;
+  }
+}
+
+.fbs-tray__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  /* Inside a floating card the page gutter is irrelevant — this needs its own
+     padding, overriding the .page-width class on the element. */
+  padding: 12px 14px;
+  min-height: var(--fbs-tray-h);
+  box-sizing: border-box;
+}
+
+.fbs-tray__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.fbs-tray__slots {
+  display: flex;
+  gap: 8px;
+}
+
+.fbs-tray__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px dashed #c4c4c4;
+  border-radius: 6px;
+  background: #fafafa;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.fbs-tray__slot.is-filled {
+  border-style: solid;
+  border-color: var(--fbs-border);
+  background: #fff;
+}
+
+/* Sized by max-* rather than width/height 100% so the intrinsic aspect ratio
+   always wins and the flex parent can never squeeze it. */
+.fbs-tray__slot img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.fbs-tray__slot-plus {
+  font-size: 20px;
+  line-height: 1;
+  color: #9a9a9a;
+}
+
+.fbs-tray__copy {
+  min-width: 0;
+}
+
+.fbs-tray__count {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.fbs-tray__hint {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--fbs-muted);
+  line-height: 1.2;
+}
+
+.fbs-tray__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+/* Must not shrink: the Add to Cart button is flex: 1 1 auto, and when the
+   struck-through subtotal is absent it grew wide enough to squeeze this column
+   until "Deal Price:" wrapped onto two lines. */
+.fbs-tray__price {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  flex: 0 0 auto;
+}
+
+.fbs-tray__price-label {
+  font-size: 12px;
+  color: var(--fbs-muted);
+  white-space: nowrap;
+}
+
+.fbs-tray__price-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.fbs-tray__price-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.fbs-tray__price-compare {
+  font-size: 13px;
+  color: var(--fbs-muted);
+}
+
+.fbs-tray__price-compare[hidden] {
+  display: none;
+}
+
+.fbs-tray__atc {
+  min-width: 190px;
+  background: var(--fbs-btn-bg);
+  color: var(--fbs-btn-text);
+  border: 0;
+  border-radius: 6px;
+  padding: 14px 24px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.fbs-tray__atc:disabled {
+  background: #ddd;
+  color: #8a8a8a;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Opens the "Your Box" sheet. The whole left block is clickable too, so this
+   is an affordance more than the only target. */
+.fbs-tray__expand {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--fbs-ink);
+  cursor: pointer;
+}
+
+.fbs-tray__left {
+  cursor: pointer;
+}
+
+/* Mobile — slots, counter and collapse sit on one compact row (as in the
+   reference); price and CTA drop to a second row so the button keeps a usable
+   width. The collapse control moves inline rather than floating above. */
+@media screen and (max-width: 749px) {
+  .fbs {
+    /* Two compact rows at ~10px padding, matching the reference height. */
+    --fbs-tray-h: 108px;
+  }
+  .fbs__heading {
+    font-size: 20px;
+    margin-bottom: 1rem;
+  }
+  .fbs-tray__inner {
+    flex-wrap: wrap;
+    /* Row gap only — the two rows sit tight together in the reference. Note the
+       horizontal padding must be restated here or it falls back to the
+       desktop rule being overridden and the card loses its gutter. */
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .fbs-tray__left {
+    width: 100%;
+    gap: 10px;
+    padding-right: 34px;
+  }
+  .fbs-tray__right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  /*
+   * The price column is pinned to a fixed width and the button takes everything
+   * that is left. That fixes both failure modes at once: the button always
+   * starts at the same x (the price column can't change width under it) and it
+   * always ends flush against the card's padding, so there is no dead space on
+   * the right. A percentage basis on the button solved the first but not the
+   * second.
+   */
+  .fbs-tray__price {
+    flex: 0 0 132px;
+  }
+  .fbs-tray__atc {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: 11px 14px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  .fbs-tray__slots {
+    gap: 6px;
+  }
+  .fbs-tray__slot {
+    width: 36px;
+    height: 36px;
+    border-radius: 5px;
+  }
+  .fbs-tray__count {
+    font-size: 14px;
+  }
+  .fbs-tray__hint {
+    font-size: 11px;
+  }
+  /* Reference stacks the label above the amount rather than inlining it. */
+  .fbs-tray__price {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .fbs-tray__price-label {
+    font-size: 11px;
+  }
+  .fbs-tray__price-value {
+    font-size: 18px;
+  }
+  .fbs-tray__price-compare {
+    font-size: 12px;
+  }
+  /* Pinned to the first row rather than vertically centred on the whole card. */
+  .fbs-tray__expand {
+    top: 22px;
+    right: 10px;
+    transform: none;
+    height: 26px;
+    width: 26px;
+  }
+}
+
+/* ------------------------------------------------------------------ "Your Box" sheet */
+
+/* Full-screen dim behind the expanded card. Sibling of the tray, since the
+   tray is transform-centred on desktop and would otherwise contain it. */
+.fbs-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.fbs-sheet-backdrop.is-open {
+  opacity: 1;
+}
+
+.fbs-sheet-backdrop[hidden] {
+  display: none;
+}
+
+/* The panel is part of the tray card, not a separate sheet. */
+.fbs-sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fbs-sheet[hidden] {
+  display: none;
+}
+
+/*
+ * The single most important rule here: unless the tray is expanded, the panel
+ * takes up no space at all. Layout must never depend on a timer — an earlier
+ * version faded the panel out and removed it 250ms later, which left the card
+ * standing at full height with invisible content for a quarter of a second.
+ */
+.fbs-tray:not(.is-expanded) .fbs-sheet {
+  display: none;
+}
+
+/* Summary row gives way to the panel while open. */
+.fbs-tray.is-expanded .fbs-tray__inner {
+  display: none;
+}
+
+.fbs-tray.is-expanded {
+  max-height: calc(100vh - 2 * var(--fbs-tray-inset));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media screen and (min-width: 750px) {
+  /* Keep the expanded card a sensible reading width rather than stretching it
+     across the tray's full 1100px. */
+  .fbs-tray.is-expanded {
+    width: min(460px, calc(100% - 32px));
+    max-height: min(80vh, 640px);
+  }
+}
+
+.fbs-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  flex: 0 0 auto;
+}
+
+.fbs-sheet__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.fbs-sheet__close {
+  border: 0;
+  background: none;
+  padding: 4px;
+  display: flex;
+  cursor: pointer;
+  color: var(--fbs-ink);
+}
+
+.fbs-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+}
+
+.fbs-sheet__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fbs-sheet__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--fbs-border);
+}
+
+.fbs-sheet__item-thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f4f4f4;
+  flex: 0 0 auto;
+}
+
+.fbs-sheet__item-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fbs-sheet__item-title {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.fbs-sheet__item-variant {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fbs-muted);
+  line-height: 1.3;
+}
+
+.fbs-sheet__item-variant:empty {
+  display: none;
+}
+
+/* Price above, Remove beneath, both hard right. */
+.fbs-sheet__item-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+
+.fbs-sheet__item-remove {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--fbs-muted);
+  cursor: pointer;
+}
+
+.fbs-sheet__item-remove:hover {
+  text-decoration: underline;
+}
+
+.fbs-sheet__item-price {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Unfilled slots */
+
+.fbs-sheet__item--empty {
+  align-items: center;
+  gap: 14px;
+}
+
+.fbs-sheet__item-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  border: 1px dashed #c4c4c4;
+  border-radius: 6px;
+  color: #9a9a9a;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.fbs-sheet__item-placeholder-label {
+  font-size: 13px;
+  color: var(--fbs-muted);
+}
+
+.fbs-sheet__empty {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--fbs-muted);
+}
+
+/* Bill summary */
+
+.fbs-sheet__bill {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #f6f6f6;
+}
+
+.fbs-sheet__bill-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.fbs-sheet__bill-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Uses the theme's own savings colour rather than an invented green. */
+.fbs-sheet__saved {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--COLOR-SALE-TEXT, #ffffff);
+  background: var(--fbs-sale);
+}
+
+.fbs-sheet__bill-rows {
+  margin: 0;
+}
+
+.fbs-sheet__bill-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  padding: 5px 0;
+}
+
+.fbs-sheet__bill-row dt,
+.fbs-sheet__bill-row dd {
+  margin: 0;
+}
+
+.fbs-sheet__bill-row--discount dd {
+  color: var(--fbs-sale);
+  font-weight: 600;
+}
+
+.fbs-sheet__bill-row--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fbs-border);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.fbs-sheet__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--fbs-border);
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+/* Mirrors the tray: fixed price column, button fills the rest. */
+.fbs-sheet__foot .fbs-tray__price {
+  flex: 0 0 132px;
+}
+
+.fbs-sheet__foot .fbs-tray__atc {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* ------------------------------------------------------------------ page chrome */
+/*
+ * This stylesheet is only ever loaded by the flexi-box-bundle-single section,
+ * so these unscoped rules are in practice scoped to the bundle page.
+ *
+ * The mobile nav bar is fixed at z-index 99 and the WhatsApp bubble floats over
+ * the bottom-right — both sit on top of the selection tray and its Add To Cart
+ * button. Hidden here rather than with the JS polling loop the step-wise bundle
+ * uses, so an app-injected button is covered whenever it appears.
+ */
+.mobilesticky-barblock,
+.mobilesticky-bar,
+.WhatsAppButton__root {
+  display: none !important;
+}
+
+/* The sticky bar reserves 65px of footer padding to clear itself. With the bar
+   hidden that is just dead space above our tray. */
+@media screen and (max-width: 766px) {
+  .site-footer.section-padding {
+    padding-bottom: var(--padding-bottom, 36px) !important;
+  }
+}
+
+/* ------------------------------------------------------------------ toast */
+/* Mirrors the step-wise bundle's message bar, which this section reuses. */
+
+.fbs ~ .message-bar,
+.message-bar {
+  padding: 10px;
+  display: flex;
+  position: fixed;
+  width: 100%;
+  justify-content: center;
+  transform: translateY(0px);
+  transition: all 0.4s ease;
+  bottom: calc(var(--fbs-tray-h, 92px) + 30px);
+  z-index: 19;
+  pointer-events: none;
+}
+
+.message-bar.is-hidden {
+  opacity: 0;
+  transform: translateY(300px);
+}
+
+.message--green {
+  background-color: #000;
+  color: #fff;
+  border-radius: 4px;
+  display: flex;
+}
+
+/* `width: 30px` with `padding: 10px` under border-box left only 10px of content
+   width, squeezing the 18px icon into an oval. Let the padding size it. */
+.message-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.message-icon > svg {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 3px;
+}
+
+.message-body {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px 15px 10px;
+}
+
+.message-body > p {
+  line-height: 1.1;
+  margin: 0;
+}

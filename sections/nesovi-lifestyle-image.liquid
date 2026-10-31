@@ -1,0 +1,104 @@
+{%- comment -%}
+  PDP lifestyle image, sourced per-product from metafields so every product can show its
+  own desktop/mobile image without duplicating this section or its settings.
+
+  Requires two "File" (image) metafields on the Product resource, created in
+  Shopify Admin under Settings > Custom data > Products:
+    custom.lifestyle_image_desktop
+    custom.lifestyle_image_mobile
+
+  If a product has no desktop image set, the section renders nothing. If it has a
+  desktop image but no mobile image, the desktop image is reused on mobile.
+{%- endcomment -%}
+
+{% liquid
+  assign lifestyle_product = closest.product | default: product
+  assign desktop_image = lifestyle_product.metafields.custom.lifestyle_image_desktop.value
+  assign mobile_image = lifestyle_product.metafields.custom.lifestyle_image_mobile.value
+  assign mobile_image = mobile_image | default: desktop_image
+%}
+
+{%- if desktop_image != blank -%}
+  <div class="nesovi-lifestyle-image color-{{ section.settings.color_scheme }}">
+    {{
+      desktop_image
+      | image_url: width: 2000
+      | image_tag:
+        loading: 'lazy',
+        class: 'nesovi-lifestyle-image__img mobile:hidden',
+        widths: '750, 1100, 1500, 2000',
+        sizes: '100vw',
+        alt: desktop_image.alt | default: lifestyle_product.title
+    }}
+    {{
+      mobile_image
+      | image_url: width: 1000
+      | image_tag:
+        loading: 'lazy',
+        class: 'nesovi-lifestyle-image__img desktop:hidden',
+        widths: '375, 550, 750, 1000',
+        sizes: '100vw',
+        alt: mobile_image.alt | default: lifestyle_product.title
+    }}
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .nesovi-lifestyle-image {
+    display: block;
+    padding-block-start: {{ section.settings.padding_top }}px;
+    padding-block-end: {{ section.settings.padding_bottom }}px;
+  }
+
+  .nesovi-lifestyle-image__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "NESOVI Lifestyle Image",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Reads its image from the product's \"lifestyle_image_desktop\" / \"lifestyle_image_mobile\" File metafields (namespace: custom). Set those per product in the product editor — this section has no image picker of its own."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "NESOVI Lifestyle Image"
+    }
+  ]
+}
+{% endschema %}

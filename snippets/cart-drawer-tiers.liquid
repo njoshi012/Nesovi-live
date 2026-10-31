@@ -1,0 +1,322 @@
+{%- doc -%}
+  Reward milestone progress bar for the cart drawer (display only; the discounts live in Shopify admin).
+  Configured in Theme settings > Cart. Up to 3 tiers; a tier with goal 0 is off. Each tier sets its own
+  "Goal based on" (item count or cart amount).
+  The wrapper is always rendered (with a stable id, so morph updates it in place) because
+  cart-drawer.js reads data-tiers-achieved after each re-render.
+
+  @example
+  {% render 'cart-drawer-tiers' %}
+{%- enddoc -%}
+
+{%- liquid
+  # Each tier has its own "Goal based on": quantity (item count), subtotal (before discounts) or discounted.
+  # A tier without its own setting falls back to the older global tier_condition.
+  # Milestones are spaced evenly; the bar fills segment by segment towards the next tier's own goal.
+  assign tier_scope = settings.tier_applies
+  assign value_quantity = 0
+  assign value_subtotal = 0
+  assign value_discounted = 0
+  assign tiers_achieved = 0
+  assign tier_count = 0
+  assign show_tiers = false
+
+  for i in (1..3)
+    assign goal_key = 'tier_' | append: i | append: '_goal'
+    if settings[goal_key] > 0
+      assign tier_count = tier_count | plus: 1
+    endif
+  endfor
+
+  if settings.tier_enable and tier_count > 0 and cart.item_count > 0
+    if tier_scope == 'all'
+      assign value_quantity = cart.item_count
+      assign value_subtotal = cart.original_total_price
+      assign value_discounted = cart.total_price
+    else
+      assign tier_collection_ids = settings.tier_collections | map: 'id'
+      assign tier_product_ids = settings.tier_products | map: 'id'
+      for item in cart.items
+        assign eligible = false
+        if tier_scope == 'products'
+          if tier_product_ids contains item.product_id
+            assign eligible = true
+          endif
+        else
+          assign item_collection_ids = item.product.collections | map: 'id'
+          for collection_id in tier_collection_ids
+            if item_collection_ids contains collection_id
+              assign eligible = true
+              break
+            endif
+          endfor
+        endif
+        if eligible
+          assign value_quantity = value_quantity | plus: item.quantity
+          assign value_subtotal = value_subtotal | plus: item.original_line_price
+          assign value_discounted = value_discounted | plus: item.final_line_price
+        endif
+      endfor
+    endif
+
+    assign show_tiers = true
+    assign tier_pct = 0
+    assign tier_message = settings.tier_complete_text | escape
+    assign next_found = false
+    assign k = 0
+    assign prev_pos = 0
+    assign prev_goal = 0
+    assign prev_mode = ''
+
+    for i in (1..3)
+      assign goal_key = 'tier_' | append: i | append: '_goal'
+      if settings[goal_key] > 0
+        assign k = k | plus: 1
+        assign mode_key = 'tier_' | append: i | append: '_condition'
+        assign text_key = 'tier_' | append: i | append: '_text'
+        assign mode = settings[mode_key] | default: settings.tier_condition | default: 'subtotal'
+        assign pos = k | times: 100.0 | divided_by: tier_count
+        case mode
+          when 'quantity'
+            assign goal = settings[goal_key]
+            assign value = value_quantity
+          when 'subtotal'
+            assign goal = settings[goal_key] | times: 100
+            assign value = value_subtotal
+          else
+            assign goal = settings[goal_key] | times: 100
+            assign value = value_discounted
+        endcase
+
+        if value >= goal
+          assign tiers_achieved = tiers_achieved | plus: 1
+          if next_found == false
+            assign tier_pct = pos
+          endif
+        elsif next_found == false
+          assign next_found = true
+          # Same unit as the previous tier: fill from that goal. Otherwise fill from zero.
+          assign base = 0
+          if mode == prev_mode
+            assign base = prev_goal
+          endif
+          assign span = goal | minus: base
+          assign progressed = value | minus: base
+          if progressed < 0
+            assign progressed = 0
+          endif
+          assign segment = pos | minus: prev_pos
+          assign tier_pct = progressed | times: segment | divided_by: span | plus: prev_pos
+
+          assign remaining = goal | minus: value
+          if mode != 'quantity'
+            assign remaining = remaining | money_without_trailing_zeros
+          endif
+          assign tier_message = settings[text_key] | escape | replace: '{{goal}}', remaining | replace: '{{ goal }}', remaining
+        endif
+
+        assign prev_pos = pos
+        assign prev_goal = goal
+        assign prev_mode = mode
+      endif
+    endfor
+  endif
+-%}
+
+<div
+  id="CartDrawerTiers"
+  class="cd-tiers-wrap"
+  data-tiers-achieved="{{ tiers_achieved }}"
+  data-confetti="{{ settings.tier_confetti }}"
+>
+  {%- if show_tiers -%}
+    <div
+      class="cd-tiers"
+      style="--tier-primary: {{ settings.tier_primary }}; --tier-secondary: {{ settings.tier_secondary }};"
+    >
+      <p class="cd-tiers__text">{{ tier_message }}</p>
+      <div
+        class="cd-tiers__bar"
+        role="progressbar"
+        aria-label="Rewards progress"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ tier_pct | round }}"
+      >
+        <span class="cd-tiers__track"><span class="cd-tiers__fill" style="width: {{ tier_pct }}%;"></span></span>
+        {%- assign k = 0 -%}
+        {%- for i in (1..3) -%}
+          {%- liquid
+            assign goal_key = 'tier_' | append: i | append: '_goal'
+            assign mode_key = 'tier_' | append: i | append: '_condition'
+            assign type_key = 'tier_' | append: i | append: '_type'
+            assign label_key = 'tier_' | append: i | append: '_label'
+            assign goal_setting = settings[goal_key] | default: 0
+            assign mode = settings[mode_key] | default: settings.tier_condition | default: 'subtotal'
+            if goal_setting > 0
+              assign k = k | plus: 1
+            endif
+            assign goal_pos = k | times: 100.0 | divided_by: tier_count
+            case mode
+              when 'quantity'
+                assign goal = goal_setting
+                assign value = value_quantity
+                assign goal_label = goal_setting | append: ' Item'
+                if goal_setting != 1
+                  assign goal_label = goal_label | append: 's'
+                endif
+              when 'subtotal'
+                assign goal = goal_setting | times: 100
+                assign value = value_subtotal
+                assign goal_label = goal | money_without_trailing_zeros
+              else
+                assign goal = goal_setting | times: 100
+                assign value = value_discounted
+                assign goal_label = goal | money_without_trailing_zeros
+            endcase
+          -%}
+          {%- if goal_setting > 0 -%}
+            <div
+              class="cd-tier{% if k == tier_count %} cd-tier--end{% elsif goal_pos < 12 %} cd-tier--start{% endif %}{% if value >= goal %} is-done{% endif %}"
+              style="--tier-pos: {{ goal_pos }}%;"
+            >
+              <span class="cd-tier__goal">{{ goal_label }}</span>
+              <span class="cd-tier__dot" aria-hidden="true">
+                {%- if value >= goal -%}
+                  <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2 5 8.6l4.5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {%- else -%}
+                  {%- case settings[type_key] -%}
+                    {%- when 'free_shipping' -%}
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M2 6h11v9H2zM13 9h4l3 3v3h-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="17" r="1.8" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="17" r="1.8" stroke="currentColor" stroke-width="2"/></svg>
+                    {%- when 'free_gift' -%}
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="4" rx="1" stroke="currentColor" stroke-width="2"/><path d="M5 12v8h14v-8M12 8v12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                    {%- else -%}
+                      <svg width="13" height="13" viewBox="0 0 24 24"><path fill="currentColor" d="M21.4 11.6 12.4 2.6A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .6.2 1.1.6 1.4l9 9a2 2 0 0 0 2.8 0l7-7a2 2 0 0 0 0-2.8ZM6.5 8A1.5 1.5 0 1 1 6.5 5a1.5 1.5 0 0 1 0 3Z"/></svg>
+                  {%- endcase -%}
+                {%- endif -%}
+              </span>
+              <span class="cd-tier__label">{{ settings[label_key] | escape }}</span>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .cd-tiers-wrap {
+    flex-shrink: 0;
+  }
+
+  .cd-tiers {
+    --dot: 22px;
+
+    padding: 10px var(--cd-gutter, 16px) 8px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .cd-tiers__text {
+    margin: 0 0 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .cd-tiers__bar {
+    position: relative;
+    height: 52px;
+    margin: 0 4px;
+  }
+
+  .cd-tiers__track {
+    position: absolute;
+    inset: calc(14px + var(--dot) / 2 - 3px) 0 auto;
+    height: 6px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--tier-secondary) 30%, #fff);
+  }
+
+  .cd-tiers__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--tier-primary);
+    transition: width 0.5s ease;
+  }
+
+  .cd-tier {
+    position: absolute;
+    top: 0;
+    left: var(--tier-pos);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    font-size: 10px;
+    line-height: 14px;
+    white-space: nowrap;
+  }
+
+  /* Keep the end milestones inside the track so the bar sits centred in the drawer. */
+  .cd-tier--end {
+    align-items: flex-end;
+    transform: translateX(-100%);
+  }
+
+  .cd-tier--start {
+    align-items: flex-start;
+    transform: none;
+  }
+
+  .cd-tier__goal {
+    opacity: 0.6;
+  }
+
+  .cd-tier__label {
+    font-weight: 600;
+  }
+
+  .cd-tier__dot {
+    display: grid;
+    place-items: center;
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    border: 1.5px solid var(--tier-secondary);
+    background: #fff;
+    color: var(--tier-secondary);
+  }
+
+  .cd-tier.is-done .cd-tier__dot {
+    border-color: var(--tier-primary);
+    background: var(--tier-primary);
+    color: #fff;
+  }
+
+  .cart-drawer__inner {
+    position: relative;
+  }
+
+  /* Host for the confetti canvas; data-skip-subtree-update keeps morph from removing a running burst. */
+  .cd-confetti-host {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .cd-confetti {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cd-tiers__fill {
+      transition: none;
+    }
+  }
+{% endstylesheet %}

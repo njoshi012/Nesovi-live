@@ -1,0 +1,249 @@
+{%- doc -%}
+  Offer ribbons on product cards and the product page gallery (display only; the discounts live in Shopify admin).
+  Offers 1-4 are set in Theme settings > Product cards. An offer is on when its ribbon text is set. It shows on every
+  product unless a tag is set, in which case it only shows on products with that tag (case-insensitive).
+  Several matching offers rotate in the same spot (CSS only).
+
+  @param {object} product - The product object
+  @param {string} [placement] - 'pdp' for the product page gallery
+
+  @example
+  {% render 'offer-ribbons', product: closest.product %}
+{%- enddoc -%}
+
+{%- if settings.offer_ribbons_enable and product != blank -%}
+  {%- liquid
+    assign product_tags = ''
+    for tag in product.tags
+      assign normalized_tag = tag | strip | downcase
+      assign product_tags = product_tags | append: normalized_tag | append: '|'
+    endfor
+    assign product_tags = product_tags | split: '|'
+
+    assign matched = ''
+    for i in (1..4)
+      assign label_key = 'offer_' | append: i | append: '_label'
+      assign tag_key = 'offer_' | append: i | append: '_tag'
+      assign offer_label = settings[label_key] | strip
+      assign offer_tag = settings[tag_key] | strip | downcase
+      if offer_label != blank
+        if offer_tag == blank or product_tags contains offer_tag
+          assign matched = matched | append: i | append: ','
+        endif
+      endif
+    endfor
+    assign matched = matched | split: ','
+  -%}
+  {%- if matched.size > 0 -%}
+    {%- liquid
+      assign offer_count = matched.size
+      assign speed = settings.offer_ribbon_speed | default: 3
+      assign cycle = speed | times: offer_count
+    -%}
+    <div
+      class="offer-ribbons{% if placement == 'pdp' %} offer-ribbons--pdp{% endif %}{% if offer_count > 1 %} offer-ribbons--rotate offer-ribbons--n{{ offer_count }}{% endif %}"
+      style="--offer-cycle: {{ cycle }}s;"
+    >
+      {%- for n in matched -%}
+        {%- liquid
+          assign label_key = 'offer_' | append: n | append: '_label'
+          assign bg_key = 'offer_' | append: n | append: '_bg'
+          assign text_key = 'offer_' | append: n | append: '_text'
+          assign steps_back = offer_count | minus: forloop.index0 | modulo: offer_count
+          assign delay = steps_back | times: speed
+        -%}
+        <span
+          class="offer-ribbon"
+          style="--ribbon-bg: {{ settings[bg_key] | default: '#000000' }}; --ribbon-fg: {{ settings[text_key] | default: '#ffffff' }}; --offer-delay: -{{ delay }}s;"
+        >
+          {{- settings[label_key] | strip | escape -}}
+        </span>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  /* Top-left: this store's sale / sold-out badges sit top-right and quick add sits at the bottom. */
+  .offer-ribbons {
+    position: absolute;
+    top: calc(10px + var(--padding-block-start, 0px));
+    left: var(--padding-inline-start, 0px);
+    z-index: var(--layer-flat, 2);
+    display: grid;
+    pointer-events: none;
+  }
+
+  .offer-ribbon {
+    grid-area: 1 / 1;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    height: 22px;
+    padding: 0 18px 0 8px;
+    font-family: var(--font-body--family);
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    background: var(--ribbon-bg, #000);
+    color: var(--ribbon-fg, #fff);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 50%, 100% 100%, 0 100%);
+  }
+
+  .offer-ribbon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 40%;
+    background: linear-gradient(
+      100deg,
+      rgb(255 255 255 / 0) 0%,
+      rgb(255 255 255 / 0.55) 50%,
+      rgb(255 255 255 / 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: offer-ribbon-shine 2.5s ease-in-out infinite;
+  }
+
+  @keyframes offer-ribbon-shine {
+    0% {
+      left: -60%;
+    }
+
+    60%,
+    100% {
+      left: 130%;
+    }
+  }
+
+  /* Several offers: each ribbon shows for one slot of the cycle, offset by --offer-delay. */
+  .offer-ribbons--rotate .offer-ribbon {
+    animation-duration: var(--offer-cycle, 6s);
+    animation-delay: var(--offer-delay, 0s);
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+
+  .offer-ribbons--n2 .offer-ribbon {
+    animation-name: offer-ribbon-swap-2;
+  }
+
+  @keyframes offer-ribbon-swap-2 {
+    0%,
+    45% {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    50%,
+    95% {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    100% {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  .offer-ribbons--n3 .offer-ribbon {
+    animation-name: offer-ribbon-swap-3;
+  }
+
+  @keyframes offer-ribbon-swap-3 {
+    0%,
+    30% {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    33.33%,
+    96.67% {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    100% {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  .offer-ribbons--n4 .offer-ribbon {
+    animation-name: offer-ribbon-swap-4;
+  }
+
+  @keyframes offer-ribbon-swap-4 {
+    0%,
+    22.5% {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    25%,
+    97.5% {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    100% {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  /* Product page gallery: top-left of the first image. Zoom is the whole image here, so there is no icon to clear. */
+  .offer-ribbons--pdp {
+    top: 1.2rem;
+    left: 0;
+    z-index: 3;
+  }
+
+  .offer-ribbons--pdp .offer-ribbon {
+    height: 28px;
+    padding: 0 22px 0 12px;
+    font-size: 13px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .offer-ribbons--rotate .offer-ribbon {
+      animation-duration: calc(var(--offer-cycle, 6s) * 2);
+      animation-delay: calc(var(--offer-delay, 0s) * 2);
+    }
+
+    .offer-ribbon::after {
+      display: none;
+      animation: none;
+    }
+  }
+
+  @media (max-width: 749px) {
+    .offer-ribbons {
+      top: calc(8px + var(--padding-block-start, 0px));
+    }
+
+    .offer-ribbon {
+      height: 20px;
+      padding: 0 15px 0 6px;
+      font-size: 10px;
+    }
+
+    .offer-ribbons--pdp {
+      top: 1rem;
+    }
+
+    .offer-ribbons--pdp .offer-ribbon {
+      height: 24px;
+      padding: 0 18px 0 8px;
+      font-size: 12px;
+    }
+  }
+{% endstylesheet %}

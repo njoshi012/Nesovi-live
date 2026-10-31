@@ -1,207 +1,392 @@
-{{ 'hero-slider.css' | asset_url | stylesheet_tag }}
-<script
-  src="{{ 'hero-slider.js' | asset_url }}"
-  type="module"
-  fetchpriority="high"
-></script>
+{% liquid
+  assign enabled_count = 0
+  assign first_image = nil
+  assign first_mobile_image = nil
+  for block in section.blocks
+    if block.settings.enabled != false
+      assign enabled_count = enabled_count | plus: 1
+      if first_image == nil and block.settings.image != blank
+        assign first_image = block.settings.image
+      endif
+      if first_mobile_image == nil and block.settings.image_mobile != blank
+        assign first_mobile_image = block.settings.image_mobile
+      endif
+    endif
+  endfor
 
-{%- liquid
-  assign slide_count = section.blocks.size
-  assign show_controls = false
-  if slide_count > 1
-    assign show_controls = true
+  if first_mobile_image == nil
+    assign first_mobile_image = first_image
   endif
 
-  assign mobile_widths = '375,550,750,1100' | split: ','
-  assign desktop_widths = '750,1100,1500,2000,2500,3200' | split: ','
--%}
+  assign show_arrows = true
+  if section.settings.icons_style == 'none' or enabled_count <= 1
+    assign show_arrows = false
+  endif
 
-<hero-slider
-  id="HeroSlider-{{ section.id }}"
-  class="hero-slider{% if slide_count == 0 %} hero-slider--empty{% endif %}"
-  data-autoplay="{{ section.settings.autoplay }}"
-  data-autoplay-speed="{{ section.settings.autoplay_speed }}"
->
-  {%- if slide_count > 0 -%}
-    <div class="hero-slider__track">
-      {%- for block in section.blocks -%}
-        {%- liquid
-          assign slide_id = 'HeroSlider-' | append: section.id | append: '-slide-' | append: forloop.index0
-          assign has_link = false
-          if block.settings.link != blank
-            assign has_link = true
-          endif
-          if forloop.index0 == 0
-            assign loading = 'eager'
-            assign fetchpriority = 'high'
-          else
-            assign loading = 'lazy'
-            assign fetchpriority = 'auto'
-          endif
-        -%}
+  assign show_pagination = true
+  if section.settings.pagination_style == 'none' or enabled_count <= 1
+    assign show_pagination = false
+  endif
 
-        {%- capture slide_media -%}
-          {%- if block.settings.desktop_image != blank or block.settings.mobile_image != blank -%}
-            <picture class="hero-slider__picture">
-              {%- if block.settings.mobile_image != blank -%}
-                <source
-                  media="(max-width: 749px)"
-                  srcset="
-                    {%- for width in mobile_widths -%}
-                      {{ block.settings.mobile_image | image_url: width: width }} {{ width }}w{% unless forloop.last %},{% endunless %}
-                    {%- endfor -%}
-                  "
-                  sizes="100vw"
-                >
-              {%- endif -%}
-              {%- if block.settings.desktop_image != blank -%}
-                <source
-                  media="(min-width: 750px)"
-                  srcset="
-                    {%- for width in desktop_widths -%}
-                      {{ block.settings.desktop_image | image_url: width: width }} {{ width }}w{% unless forloop.last %},{% endunless %}
-                    {%- endfor -%}
-                  "
-                  sizes="100vw"
-                >
-              {%- endif -%}
-              <img
-                class="hero-slider__image"
-                src="{{ block.settings.desktop_image | default: block.settings.mobile_image | image_url: width: 1500 }}"
-                alt="{{ block.settings.alt | escape }}"
-                loading="{{ loading }}"
-                fetchpriority="{{ fetchpriority }}"
-                width="{{ block.settings.desktop_image.width | default: block.settings.mobile_image.width }}"
-                height="{{ block.settings.desktop_image.height | default: block.settings.mobile_image.height }}"
-              >
-            </picture>
-          {%- else -%}
-            <div class="hero-slider__picture hero-slider__picture--placeholder">
-              {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero-slider__placeholder-svg' }}
-            </div>
-          {%- endif -%}
-        {%- endcapture -%}
+  assign slideshow_class = ''
+  if enabled_count <= 1
+    assign slideshow_class = 'slideshow--single-media'
+  endif
+  if section.settings.desktop_height == 'adapt' or section.settings.mobile_height == 'adapt'
+    assign slideshow_class = slideshow_class | append: ' hero-slider--has-adapt'
+  endif
 
-        <div
-          id="{{ slide_id }}"
-          class="hero-slider__slide"
-          role="group"
-          aria-roledescription="slide"
-          aria-label="Slide {{ forloop.index }} of {{ slide_count }}"
-          {{ block.shopify_attributes }}
-        >
-          {%- if has_link -%}
-            <a
-              href="{{ block.settings.link }}"
-              class="hero-slider__link"
-              {% if block.settings.alt != blank %}
-                aria-label="{{ block.settings.alt | escape }}"
-              {% endif %}
-            >
-              {{ slide_media }}
-            </a>
-          {%- else -%}
-            {{ slide_media }}
-          {%- endif -%}
-        </div>
-      {%- endfor -%}
-    </div>
+  case section.settings.desktop_height
+    when 'small'
+      assign slide_size = 'small'
+    when 'large'
+      assign slide_size = 'large'
+    when 'full'
+      assign slide_size = 'large'
+    else
+      assign slide_size = 'medium'
+  endcase
+%}
 
-    {%- if show_controls -%}
-      <div
-        class="hero-slider__dots"
-        role="tablist"
-      >
-        {%- for block in section.blocks -%}
-          <button
-            type="button"
-            class="hero-slider__dot{% if forloop.first %} hero-slider__dot--active{% endif %}"
-            role="tab"
-            aria-label="Go to slide {{ forloop.index }}"
-            aria-controls="HeroSlider-{{ section.id }}-slide-{{ forloop.index0 }}"
-            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-            data-index="{{ forloop.index0 }}"
-          ></button>
-        {%- endfor -%}
-      </div>
-    {%- endif -%}
-  {%- elsif request.design_mode -%}
-    <div class="hero-slider__empty-state">
-      {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero-slider__placeholder-svg' }}
-      <p>Add a slide block to get started.</p>
-    </div>
+{% style %}
+  {%- comment -%} DESKTOP HEIGHT {%- endcomment -%}
+  {% if section.settings.desktop_height == 'full' %}
+  @media screen and (min-width: 750px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: 100svh;
+    }
+  }
+  {% elsif section.settings.desktop_height == 'adapt' %}
+    {% if first_image %}
+  @media screen and (min-width: 750px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      aspect-ratio: {{ first_image.aspect_ratio | default: 2.5 }};
+      min-height: 0;
+      height: auto;
+    }
+  }
+    {% endif %}
+  {% else %}
+  @media screen and (min-width: 750px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: {% if section.settings.desktop_height == 'small' %}21.25rem{% elsif section.settings.desktop_height == 'large' %}37.5rem{% else %}31.25rem{% endif %};
+    }
+  }
+  {% endif %}
+
+  {%- comment -%} MOBILE HEIGHT {%- endcomment -%}
+  {% case section.settings.mobile_height %}
+    {% when 'small' %}
+  @media screen and (max-width: 749px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: 17.5rem;
+    }
+  }
+    {% when 'medium' %}
+  @media screen and (max-width: 749px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: 21.25rem;
+    }
+  }
+    {% when 'large' %}
+  @media screen and (max-width: 749px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: 25rem;
+    }
+  }
+    {% when 'full' %}
+  @media screen and (max-width: 749px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      min-height: 100svh;
+    }
+  }
+    {% when 'adapt' %}
+      {% if first_mobile_image %}
+  @media screen and (max-width: 749px) {
+    .shopify-section-{{ section.id }} slideshow-slides {
+      aspect-ratio: {{ first_mobile_image.aspect_ratio | default: 0.75 }};
+      min-height: 0;
+      height: auto;
+    }
+  }
+      {% endif %}
+  {% endcase %}
+{% endstyle %}
+
+{% capture controls %}
+  {%- if show_pagination -%}
+    {%- render 'slideshow-controls',
+      style: section.settings.pagination_style,
+      autoplay: section.settings.autoplay,
+      item_count: enabled_count,
+      show_arrows: false,
+      arrows_on_media: true,
+      controls_on_media: true,
+      pagination_position: 'center',
+      icon_style: section.settings.icons_style
+    -%}
   {%- endif -%}
-</hero-slider>
+{% endcapture %}
+
+{% capture slides %}
+  {% content_for 'blocks' %}
+{% endcapture %}
+
+<div
+  class="hero-slider-section spacing-style disable-section-top-offset"
+  style="{% render 'spacing-padding', settings: section.settings %}"
+>
+  {%- render 'slideshow',
+    class: slideshow_class,
+    controls: controls,
+    show_arrows: show_arrows,
+    icon_style: section.settings.icons_style,
+    autoplay: section.settings.autoplay,
+    autoplay_speed: section.settings.autoplay_speed,
+    infinite: section.settings.infinite,
+    slides: slides,
+    slide_count: enabled_count,
+    slide_size: slide_size
+  -%}
+</div>
+
+{% stylesheet %}
+  .hero-slider-section {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .hero-slider-section slideshow-component {
+    display: block;
+    width: 100%;
+  }
+
+  .hero-slider-section slideshow-slide {
+    position: relative;
+  }
+
+  /*
+    Default fallback ONLY applies when neither desktop nor mobile is set
+    to "Adapt to image" — real adapt sizing (aspect-ratio pulled from the
+    actual image in Liquid above) always wins because it's more specific
+    to .shopify-section-{{ section.id }} and comes from an inline <style>
+    block, which loads after this stylesheet.
+  */
+  @media screen and (max-width: 749px) {
+    .hero-slider-section:not(.hero-slider--adapt-fallback-off) slideshow-slides {
+      aspect-ratio: 3 / 4;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "Hero slider",
   "tag": "section",
+  "class": "hero-slider-wrapper section-wrapper",
+  "blocks": [
+    {
+      "type": "_hero-slide"
+    }
+  ],
+  "max_blocks": 20,
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
   "settings": [
+    {
+      "type": "header",
+      "content": "Height"
+    },
+    {
+      "type": "select",
+      "id": "desktop_height",
+      "label": "Desktop height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "full",
+          "label": "Full screen"
+        }
+      ],
+      "default": "adapt"
+    },
+    {
+      "type": "select",
+      "id": "mobile_height",
+      "label": "Mobile height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "full",
+          "label": "Full screen"
+        }
+      ],
+      "default": "adapt"
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "select",
+      "id": "icons_style",
+      "label": "Navigation arrows",
+      "options": [
+        {
+          "value": "arrow",
+          "label": "Arrows"
+        },
+        {
+          "value": "chevron",
+          "label": "Chevrons"
+        },
+        {
+          "value": "arrows_large",
+          "label": "Large arrows"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "arrows_large"
+    },
+    {
+      "type": "select",
+      "id": "pagination_style",
+      "label": "Pagination",
+      "options": [
+        {
+          "value": "dots",
+          "label": "Dots"
+        },
+        {
+          "value": "counter",
+          "label": "Counter"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ],
+      "default": "dots"
+    },
+    {
+      "type": "header",
+      "content": "Autoplay"
+    },
     {
       "type": "checkbox",
       "id": "autoplay",
-      "label": "Autoplay",
+      "label": "Enable autoplay",
       "default": true
     },
     {
       "type": "range",
       "id": "autoplay_speed",
       "label": "Autoplay speed",
-      "min": 2,
+      "min": 1,
       "max": 10,
       "step": 1,
       "unit": "s",
       "default": 5,
       "visible_if": "{{ section.settings.autoplay }}"
-    }
-  ],
-  "blocks": [
+    },
     {
-      "type": "slide",
-      "name": "Slide",
-      "settings": [
-        {
-          "type": "image_picker",
-          "id": "desktop_image",
-          "label": "Desktop image"
-        },
-        {
-          "type": "image_picker",
-          "id": "mobile_image",
-          "label": "Mobile image"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "Redirect link"
-        },
-        {
-          "type": "text",
-          "id": "alt",
-          "label": "Alt text",
-          "info": "Describe the image for accessibility and SEO."
-        }
-      ]
+      "type": "checkbox",
+      "id": "infinite",
+      "label": "Infinite loop",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
     }
   ],
-  "max_blocks": 8,
   "presets": [
     {
       "name": "Hero slider",
-      "category": "Image",
-      "blocks": [
-        {
-          "type": "slide"
+      "category": "Banners",
+      "blocks": {
+        "slide_1": {
+          "type": "_hero-slide",
+          "settings": {
+            "enabled": true,
+            "heading": "New Arrivals",
+            "subheading": "Shop the latest collection",
+            "primary_button_text": "Shop Now",
+            "primary_button_link": "shopify://collections/all",
+            "text_alignment": "center",
+            "vertical_position": "middle",
+            "content_width": "medium"
+          }
         },
-        {
-          "type": "slide"
+        "slide_2": {
+          "type": "_hero-slide",
+          "settings": {
+            "enabled": true,
+            "heading": "Bestsellers",
+            "primary_button_text": "Shop Now",
+            "primary_button_link": "shopify://collections/all",
+            "text_alignment": "center",
+            "vertical_position": "middle",
+            "content_width": "medium"
+          }
         }
-      ]
+      },
+      "block_order": ["slide_1", "slide_2"]
     }
-  ],
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  }
+  ]
 }
 {% endschema %}

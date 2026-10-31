@@ -1,0 +1,110 @@
+{%- comment -%}
+  Urgency Sale Timer section. The schedule, labels and colors live in Theme settings > Urgency sale timer,
+  shared with the announcement bar and cart drawer; this section only adds its own heading, button and sticky option.
+{%- endcomment -%}
+
+<div class="urgency-sale-timer-section__inner">
+  {% render 'urgency-sale-timer', placement: 'section', text: section.settings.heading, id: section.id %}
+
+  {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+    <a href="{{ section.settings.button_link }}" class="urgency-sale-timer-section__button">
+      {{- section.settings.button_label | escape -}}
+    </a>
+  {%- endif -%}
+</div>
+
+{%- if request.design_mode -%}
+  {%- if settings.sale_timer_enable == false or settings.sale_timer_end_date == blank -%}
+    <p class="urgency-sale-timer-section__note">
+      Turn on the timer and set a sale end date in Theme settings &gt; Urgency sale timer.
+    </p>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Urgency Sale Timer",
+  "class": "urgency-sale-timer-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Dates, countdown, labels and colors are set in Theme settings > Urgency sale timer."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Text before the timer",
+      "default": "Sale ends in"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "make_sticky",
+      "label": "Stick to the top of the page",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Urgency Sale Timer"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  {%- if section.settings.make_sticky -%}
+    #shopify-section-{{ section.id }} {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+  {%- endif -%}
+
+  #shopify-section-{{ section.id }}[hidden] {
+    display: none !important;
+  }
+
+  #shopify-section-{{ section.id }} .urgency-sale-timer-section__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 16px;
+    background: {{ settings.sale_timer_bg }};
+  }
+
+  #shopify-section-{{ section.id }} .urgency-timer {
+    padding-block: 12px;
+  }
+
+  #shopify-section-{{ section.id }} .urgency-sale-timer-section__button {
+    display: inline-block;
+    margin-block: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    background: {{ settings.sale_timer_box_bg }};
+    color: {{ settings.sale_timer_box_text }};
+  }
+
+  #shopify-section-{{ section.id }} .urgency-sale-timer-section__note {
+    margin: 0;
+    padding: 16px;
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+</style>

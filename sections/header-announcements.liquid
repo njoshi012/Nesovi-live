@@ -1,5 +1,4 @@
 
-
 {% if section.blocks.size > 1 %}
   <script
     src="{{ 'announcement-bar.js' | asset_url }}"
@@ -8,12 +7,23 @@
   ></script>
 {% endif %}
 
-{% render 'contrast-override', background_color: section.settings.background_color, section_id: section.id %}
+{% style %}
+  .shopify-section-{{ section.id }},
+  .shopify-section-{{ section.id }} .section-background,
+  .shopify-section-{{ section.id }} .section-background::before,
+  .shopify-section-{{ section.id }} .section-background::after,
+  .shopify-section-{{ section.id }} .announcement-bar,
+  .shopify-section-{{ section.id }} announcement-bar-component {
+    background-color: {{ section.settings.background_color | default: '#F5F5F5' }} !important;
+    background-image: none !important;
+    background: {{ section.settings.background_color | default: '#F5F5F5' }} !important;
+  }
+{% endstyle %}
 
-<div class="section-background color-custom-{{ section.id }}"></div>
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
 <aside
-  class="announcement-bar spacing-style section section--{{ section.settings.section_width }} color-custom-{{ section.id }}"
-  style="{% render 'spacing-padding', settings: section.settings %}; --border-bottom-width: {{ section.settings.divider_width }}px;{% if section.settings.divider_color != blank %} --color-border: {{ section.settings.divider_color }};{% endif %}"
+  class="announcement-bar spacing-style section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
+  style="{% render 'spacing-padding', settings: section.settings %}; --border-bottom-width: {{ section.settings.divider_width }}px; background-color: {{ section.settings.background_color | default: '#F5F5F5' }} !important;"
 >
   {% liquid
     assign autoplay = false
@@ -39,6 +49,7 @@
     </div>
   </announcement-bar-component>
 </aside>
+{% render 'urgency-sale-timer', placement: 'announcement' %}
 
 {% stylesheet %}
   .announcement-bar {
@@ -70,7 +81,6 @@
 
   .announcement-bar__slide {
     transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-    content-visibility: visible;
 
     &[aria-hidden='true'] {
       opacity: 0;
@@ -167,10 +177,16 @@
       "default": "page-width"
     },
     {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-4",
+      "label": "t:settings.color_scheme"
+    },
+    {
       "type": "color",
       "id": "background_color",
-      "label": "t:settings.background_color",
-      "placeholder": "t:settings.default"
+      "label": "Background color",
+      "default": "#F5F5F5"
     },
     {
       "type": "range",
@@ -181,13 +197,6 @@
       "step": 0.5,
       "unit": "px",
       "default": 0
-    },
-    {
-      "type": "color",
-      "id": "divider_color",
-      "label": "t:settings.divider_color",
-      "placeholder": "t:settings.default",
-      "visible_if": "{{ section.settings.divider_width > 0 }}"
     },
     {
       "type": "header",

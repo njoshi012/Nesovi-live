@@ -9,15 +9,21 @@
 {%- enddoc -%}
 
 {% liquid
-  assign scoped_class = block.settings.style_class | append: '--' | append: block.id
-  assign class = 'add-to-cart-button ' | append: block.settings.style_class | append: ' ' | append: scoped_class
+  assign class = 'add-to-cart-button ' | append: block.settings.style_class
   assign id = 'BuyButtons-ProductSubmitButton-' | append: block.id
+
+  # The mobile sticky bar (snippets/sticky-add-to-cart.liquid) is the sole
+  # Add to cart control on mobile PDP; hide this normal in-page button there.
+  # This block is also reused by product-card quick-add on collection/home
+  # grids, so gate strictly on the actual page type — never hide it there.
+  assign wrapper_class = ''
+  if request.page_type == 'product'
+    assign wrapper_class = 'add-to-cart-block--pdp'
+  endif
 %}
-{% render 'button-custom-styles', block_settings: block.settings, block_id: block.id %}
-{% render 'add-to-cart-button-styles' %}
-{% render 'fly-to-cart-styles' %}
 
 <span
+  class="{{ wrapper_class }}"
   {{ block.shopify_attributes }}
   style="--add-to-cart-font-case: {{ settings.button_text_case }};"
 >
@@ -25,12 +31,18 @@
     id: id,
     class: class,
     can_add_to_cart: can_add_to_cart,
-    show_icon: can_add_to_cart,
     product: closest.product,
-    add_to_cart_text: add_to_cart_text,
-    data_testid: 'standalone-add-to-cart'
+    add_to_cart_text: add_to_cart_text
   %}
 </span>
+
+{% stylesheet %}
+  @media screen and (max-width: 749px) {
+    .add-to-cart-block--pdp {
+      display: none;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -49,43 +61,9 @@
         {
           "value": "button-secondary",
           "label": "t:options.secondary"
-        },
-        {
-          "value": "button-custom",
-          "label": "t:options.custom"
         }
       ],
-      "default": "button-secondary",
-      "info": "t:info.edit_button_style_in_theme_settings"
-    },
-    {
-      "type": "header",
-      "content": "t:content.button_colors",
-      "visible_if": "{{ block.settings.style_class == \"button-custom\" }}"
-    },
-    {
-      "type": "color",
-      "id": "custom_button_background",
-      "label": "t:settings.background",
-      "default": "{{ settings.color_palette.foreground }}",
-      "alpha": true,
-      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
-    },
-    {
-      "type": "color",
-      "id": "custom_button_text",
-      "label": "t:settings.text",
-      "default": "{{ settings.color_palette.background }}",
-      "alpha": true,
-      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
-    },
-    {
-      "type": "color",
-      "id": "custom_button_border",
-      "label": "t:settings.borders",
-      "default": "{{ settings.color_palette.background }}",
-      "alpha": true,
-      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
+      "default": "button-secondary"
     }
   ]
 }

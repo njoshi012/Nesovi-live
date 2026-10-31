@@ -8,7 +8,7 @@
 <script>
   (() => {
     const FLEXY_OPTIONS = {
-      watchdog: true,
+      watchdog: false,
       readyTimeoutMs: 7000,
     };
 
@@ -54,8 +54,8 @@
       }, 1500);
 
       document
-        .querySelectorAll('dialog[open]')
-        .forEach((d) => d.close());
+        .querySelectorAll('dialog[ref="dialog"]')
+        .forEach((d) => d.open && d.close());
 
       if (btn.getAttribute('data-flexy-type') === 'buynow') {
         if (typeof window.handleFlexyBuyNow === 'function') window.handleFlexyBuyNow(btn);
@@ -185,7 +185,7 @@
       if (FLEXY_OPTIONS.watchdog && FLEXY_OPTIONS.readyTimeoutMs) {
         setTimeout(() => {
           if (!ready) markReady();
-        }, FLEXY_OPTIONS.readyTimeoutMs);
+        }, CONFIG.readyTimeoutMs);
       }
     }
 

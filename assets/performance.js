@@ -22,9 +22,6 @@ class ThemePerformance {
    */
   measureFromEvent(benchmarkName, event) {
     const metricName = `${this.metricPrefix}:${benchmarkName}`;
-    performance.mark(`${metricName}:start`, {
-      startTime: event.timeStamp,
-    });
 
     performance.mark(`${metricName}:end`);
 

@@ -3,26 +3,11 @@
 
   @param {section} section - The section object
   @param {string} children - The children of the section
-  @param {string} section_id - The ID of the section
-  @param {string} background_color - The background color of the section
 {%- enddoc -%}
 
-{% liquid
-  assign skip_contrast = false
-  if section.settings.background_media != blank and section.settings.background_media != 'none'
-    assign skip_contrast = true
-  endif
-%}
-{% render 'contrast-override',
-  background_color: background_color,
-  section_id: section_id,
-  skip_contrast: skip_contrast
-%}
-
-<div class="section-background color-custom-{{ section_id }}"></div>
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
 <div
-  class="section section--{{ section.settings.section_width }} color-custom-{{ section_id }}"
-  data-testid="ui-test-section"
+  class="section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
 
   {% if request.visual_preview_mode %}
     data-shopify-visual-preview
@@ -93,10 +78,10 @@
     display: none;
   }
 
-  body:has(#header-group > .header-section > #header-component[transparent]):not(
-      :has(#header-group > .header-section + .shopify-section)
+  body:has(> #header-group > .header-section > #header-component[transparent]):not(
+      :has(> #header-group > .header-section + .shopify-section)
     )
-    #MainContent
+    > main
     > .section-wrapper:first-child {
     --section-height-offset: var(--header-group-height, 0);
   }

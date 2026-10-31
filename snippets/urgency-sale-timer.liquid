@@ -1,0 +1,212 @@
+{%- doc -%}
+  Urgency sale countdown (hours / minutes / seconds) for the Urgency Sale Timer section, the announcement bar
+  and the cart drawer. One schedule in Theme settings > Urgency sale timer; uses assets/urgency-sale-timer.js.
+  Dates are read in the store's time zone. Renders hidden; the script shows it while the sale is live.
+
+  @param {string} placement - 'section', 'announcement' or 'cart'
+  @param {string} [text] - Text before the timer (section placement)
+  @param {string} [id] - Unique id suffix (section placement)
+
+  @example
+  {% render 'urgency-sale-timer', placement: 'cart' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign show_timer = false
+  if settings.sale_timer_enable and settings.sale_timer_end_date != blank
+    if placement == 'section'
+      assign show_timer = true
+      assign timer_text = text
+    elsif placement == 'announcement' and settings.sale_timer_announcement
+      assign show_timer = true
+      assign timer_text = settings.sale_timer_announcement_text
+    elsif placement == 'cart' and settings.sale_timer_cart
+      assign show_timer = true
+      assign timer_text = settings.sale_timer_cart_text
+    endif
+  endif
+-%}
+
+{%- if show_timer -%}
+  {%- liquid
+    assign tz = 'now' | date: '%z'
+    assign tz_hours = tz | slice: 0, 3
+    assign tz_minutes = tz | slice: 3, 2
+    assign tz = tz_hours | append: ':' | append: tz_minutes
+
+    assign end_time = settings.sale_timer_end_time | strip | default: '23:59'
+    if end_time.size == 4
+      assign end_time = '0' | append: end_time
+    endif
+    assign end_iso = settings.sale_timer_end_date | strip | append: 'T' | append: end_time | append: ':00' | append: tz
+
+    assign start_iso = ''
+    assign start_date = settings.sale_timer_start_date | strip
+    if start_date != blank
+      assign start_time = settings.sale_timer_start_time | strip | default: '00:00'
+      if start_time.size == 4
+        assign start_time = '0' | append: start_time
+      endif
+      assign start_iso = start_date | append: 'T' | append: start_time | append: ':00' | append: tz
+    endif
+
+    assign cycle_ms = settings.sale_timer_cycle | times: 3600000
+    if settings.sale_timer_cycle_unit == 'days'
+      assign cycle_ms = cycle_ms | times: 24
+    endif
+  -%}
+
+  <script
+    src="{{ 'urgency-sale-timer.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+
+  {%- comment -%} Stable id + data-skip-subtree-update: cart re-renders morph the drawer without resetting a running timer. {%- endcomment -%}
+  <div id="UrgencyTimer-{{ placement }}{% if id %}-{{ id }}{% endif %}" class="urgency-timer-wrap" data-skip-subtree-update>
+    <urgency-sale-timer-component
+      class="urgency-timer urgency-timer--{{ placement }}"
+      start="{{ start_iso | escape }}"
+      end="{{ end_iso | escape }}"
+      mode="{{ settings.sale_timer_on_expire }}"
+      cycle-ms="{{ cycle_ms }}"
+      {% if placement == 'section' %}hide-section{% endif %}
+      style="--urgency-timer-bg: {{ settings.sale_timer_bg }}; --urgency-timer-fg: {{ settings.sale_timer_text }}; --urgency-timer-box-bg: {{ settings.sale_timer_box_bg }}; --urgency-timer-box-fg: {{ settings.sale_timer_box_text }};"
+      hidden
+    >
+      {%- if timer_text != blank -%}
+        <span class="urgency-timer__text">{{ timer_text | escape }}</span>
+      {%- endif -%}
+      <span class="urgency-timer__display" data-urgency-timer-display>
+        {%- assign timer_parts = 'hours,minutes,seconds' | split: ',' -%}
+        {%- for part in timer_parts -%}
+          {%- liquid
+            assign label_key = 'sale_timer_' | append: part | append: '_label'
+            assign unit_label = settings[label_key]
+            if unit_label == blank
+              assign unit_label = part | capitalize
+            endif
+          -%}
+          <span class="urgency-timer__unit">
+            <span class="urgency-timer__value" data-urgency-timer-{{ part }}>00</span>
+            <span class="urgency-timer__label">{{ unit_label | escape }}</span>
+          </span>
+        {%- endfor -%}
+      </span>
+      <span class="urgency-timer__message" data-urgency-timer-message hidden>
+        {{- settings.sale_timer_expired_message | default: 'This sale has ended. Check back soon!' | escape -}}
+      </span>
+    </urgency-sale-timer-component>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .urgency-timer-wrap {
+    flex-shrink: 0;
+  }
+
+  .urgency-timer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 16px;
+    padding: 8px 16px;
+    background: var(--urgency-timer-bg);
+    color: var(--urgency-timer-fg);
+    font-family: var(--font-body--family);
+    text-align: center;
+  }
+
+  .urgency-timer[hidden],
+  .urgency-timer [hidden] {
+    display: none !important;
+  }
+
+  .urgency-timer__text,
+  .urgency-timer__message {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .urgency-timer__display {
+    display: inline-flex;
+    gap: 10px;
+  }
+
+  .urgency-timer__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 62px;
+    padding: 6px 8px 5px;
+    border-radius: 8px;
+    background: var(--urgency-timer-box-bg);
+    color: var(--urgency-timer-box-fg);
+  }
+
+  .urgency-timer__value {
+    font-size: 24px;
+    line-height: 1.05;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .urgency-timer__label {
+    font-size: 11px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .urgency-timer--cart {
+    padding-inline: var(--cd-gutter, 16px);
+  }
+
+  .urgency-timer--cart .urgency-timer__text {
+    font-size: 15px;
+  }
+
+  .urgency-timer--cart .urgency-timer__unit {
+    min-width: 52px;
+    padding: 4px 6px;
+  }
+
+  .urgency-timer--cart .urgency-timer__value {
+    font-size: 20px;
+  }
+
+  .urgency-timer--cart .urgency-timer__label {
+    font-size: 10px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .urgency-timer {
+      gap: 6px 10px;
+      padding: 6px 12px;
+    }
+
+    .urgency-timer__text,
+    .urgency-timer__message {
+      font-size: 14px;
+    }
+
+    .urgency-timer__display {
+      gap: 6px;
+    }
+
+    .urgency-timer__unit {
+      min-width: 46px;
+      padding: 4px 5px;
+      border-radius: 6px;
+    }
+
+    .urgency-timer__value {
+      font-size: 18px;
+    }
+
+    .urgency-timer__label {
+      font-size: 9px;
+    }
+  }
+{% endstylesheet %}
