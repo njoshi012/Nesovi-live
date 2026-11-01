@@ -2433,7 +2433,7 @@
         "min": 1,
         "max": 48,
         "step": 1,
-        "default": 24,
+        "default": 18,
         "visible_if": "{{ settings.sale_timer_on_expire == 'repeat' }}"
       },
       {
