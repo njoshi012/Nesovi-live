@@ -3,6 +3,7 @@
   Offers 1-4 are set in Theme settings > Product cards. An offer is on when its ribbon text is set. It shows on every
   product unless a tag is set, in which case it only shows on products with that tag (case-insensitive).
   Several matching offers rotate in the same spot (CSS only).
+  Products in the 'new-arrivals' collection never show offer ribbons.
 
   @param {object} product - The product object
   @param {string} [placement] - 'pdp' for the product page gallery
@@ -11,7 +12,19 @@
   {% render 'offer-ribbons', product: closest.product %}
 {%- enddoc -%}
 
-{%- if settings.offer_ribbons_enable and product != blank -%}
+{%- liquid
+  assign in_new_arrivals = false
+  if product != blank
+    for collection in product.collections
+      if collection.handle == 'new-collection' or collection.handle == 'new-arrivals'
+        assign in_new_arrivals = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if settings.offer_ribbons_enable and product != blank and in_new_arrivals == false -%}
   {%- liquid
     assign product_tags = ''
     for tag in product.tags
