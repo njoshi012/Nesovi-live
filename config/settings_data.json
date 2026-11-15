@@ -71,7 +71,7 @@
     "tier_applies": "all",
     "tier_primary": "#000000",
     "tier_secondary": "#808080",
-    "tier_confetti": true,
+    "tier_confetti": false,
     "tier_complete_text": "You have unlocked all rewards!",
     "tier_1_goal": 2,
     "tier_1_type": "free_gift",
