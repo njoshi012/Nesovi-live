@@ -98,7 +98,7 @@
         </div>
       {%- endform -%}
     </product-form-component>
-    {%- if section.type == 'product-information' -%}
+    {%- if section.id == 'main' -%}
     {%- capture custom_wa_text -%}Hello, I would like to enquire about customization & order for {{ product.title }} {{ shop.url }}{{ product.url }}{%- endcapture -%}
     <a
       class="customization-order-button"
