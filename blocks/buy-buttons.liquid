@@ -98,6 +98,18 @@
         </div>
       {%- endform -%}
     </product-form-component>
+    {%- capture custom_wa_text -%}Hello, I would like to enquire about customization & order for {{ product.title }} {{ shop.url }}{{ product.url }}{%- endcapture -%}
+    <a
+      class="customization-order-button"
+      href="https://wa.me/917977368049?text={{ custom_wa_text | url_encode }}"
+      target="_blank"
+      rel="noopener"
+    >
+      <svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" fill="#25d366">
+        <path d="M16 3C8.8 3 3 8.8 3 16c0 2.3.6 4.5 1.7 6.4L3 29l6.8-1.8A13 13 0 0 0 16 29c7.2 0 13-5.8 13-13S23.2 3 16 3zm0 23.7c-2 0-3.9-.5-5.5-1.5l-.4-.2-4 1 1.1-3.9-.3-.4A10.7 10.7 0 1 1 16 26.7zm5.9-8c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6l-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.4c.2.2 2.4 3.7 5.8 5.1.8.4 1.4.6 2 .7.8.3 1.6.2 2.2.1.7-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/>
+      </svg>
+      <span>Customization &amp; Order</span>
+    </a>
   {%- else -%}
     <div class="product-form-buttons">
       <button
@@ -219,6 +231,28 @@
 {% stylesheet %}
   .buy-buttons-block {
     width: 100%;
+  }
+
+  .customization-order-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin-block-start: 12px;
+    padding-block: 16px;
+    background: #1a1a1a;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .customization-order-button:hover {
+    color: #fff;
+    opacity: 0.9;
   }
 
   .product-form-buttons {
