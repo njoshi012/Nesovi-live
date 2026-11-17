@@ -98,6 +98,7 @@
         </div>
       {%- endform -%}
     </product-form-component>
+    {%- if request.page_type == 'product' -%}
     {%- capture custom_wa_text -%}Hello, I would like to enquire about customization & order for {{ product.title }} {{ shop.url }}{{ product.url }}{%- endcapture -%}
     <a
       class="customization-order-button"
@@ -110,6 +111,7 @@
       </svg>
       <span>Customization &amp; Order</span>
     </a>
+    {%- endif -%}
   {%- else -%}
     <div class="product-form-buttons">
       <button
@@ -248,6 +250,12 @@
     text-transform: uppercase;
     text-decoration: none;
     font-size: 14px;
+  }
+
+  .quick-add-modal__content .customization-order-button,
+  product-card .customization-order-button,
+  .product-card .customization-order-button {
+    display: none;
   }
 
   .customization-order-button:hover {
